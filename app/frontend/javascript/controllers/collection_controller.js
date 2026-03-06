@@ -15,13 +15,14 @@ export default class extends Controller {
         type === "checkbox" ||
         type === "radio" ||
         type === "select-one" ||
-        type === "select-multiple"
+        type === "select-multiple" ||
+        type === "date"
       ) {
         this.submitForm();
       }
     });
     this.element.addEventListener("input", (event) => {
-      if (event.target.type === "text") {
+      if (event.target.type === "text" || event.target.type === "number") {
         this.debouncedSubmit();
       }
     });
@@ -57,7 +58,7 @@ export default class extends Controller {
   clearAndSubmit(event) {
     event.preventDefault();
 
-    this.element.querySelectorAll('input[type="text"], input[type="search"]').forEach(input => {
+    this.element.querySelectorAll('input[type="text"], input[type="search"], input[type="number"], input[type="date"]').forEach(input => {
       input.value = '';
     });
     this.element.querySelectorAll('select').forEach(select => {
