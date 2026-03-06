@@ -26,8 +26,6 @@
 
   <%= render "admin/shared/activities_tabs" %>
 
-  <%= render "admin/shared/active_filters_subheader" %>
-
   <!-- Filters -->
   <%= form_with url: admin_activities_visits_path,
                 method: :get,
@@ -94,6 +92,8 @@
     </div>
 
   <% end %>
+
+  <%= render "admin/shared/active_filters_subheader" %>
 
   <!-- Count -->
   <%= render "visit_count" %>
