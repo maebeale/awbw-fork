@@ -2,6 +2,7 @@
 <%
   time_period = params[:time_period].presence || "past_month"
   time_label = case time_period
+               when "all_time"   then "All time"
                when "past_day"   then "Past day"
                when "past_week"  then "Past week"
                when "past_month" then "Past month"
@@ -18,7 +19,7 @@
   audience_values = Array(params[:audience]).reject(&:blank?).presence || default_audiences
   audience_labels = audience_values.filter_map { |v| [v, audience_labels_map[v]] }.select(&:last)
 
-  has_search_filters = params[:name].present? || params[:resource_name].present? ||
+  has_search_filters = params[:event_name].present? || params[:resource_name].present? ||
                        params[:visit_id].present? || params[:props].present? ||
                        params[:user_id].present? || params[:from].present? ||
                        params[:to].present?
@@ -54,10 +55,10 @@
                 class="ml-0.5 text-indigo-600 hover:text-indigo-900">&times;</button>
       </span>
     <% end %>
-    <% if params[:name].present? %>
+    <% if params[:event_name].present? %>
       <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium">
-        Event: <%= params[:name] %>
-        <button type="button" data-action="filter-chip#remove" data-param="name"
+        Event: <%= params[:event_name] %>
+        <button type="button" data-action="filter-chip#remove" data-param="event_name"
                 class="ml-0.5 text-blue-600 hover:text-blue-900">&times;</button>
       </span>
     <% end %>

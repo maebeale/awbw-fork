@@ -9,6 +9,9 @@ application.register("anchor-highlight", AnchorHighlightController)
 import AssetPickerController from "./asset_picker_controller"
 application.register("asset-picker", AssetPickerController)
 
+import CheckboxSelectController from "./checkbox_select_controller"
+application.register("checkbox-select", CheckboxSelectController)
+
 import AutosaveController from "./autosave_controller"
 application.register("autosave", AutosaveController)
 
@@ -41,6 +44,12 @@ application.register("dropdown", DropdownController)
 
 import FilePreviewController from "./file_preview_controller"
 application.register("file-preview", FilePreviewController)
+
+import FilterChipController from "./filter_chip_controller"
+application.register("filter-chip", FilterChipController)
+
+import HeaderFormController from "./header_form_controller"
+application.register("header-form", HeaderFormController)
 
 import InactiveToggleController from "./inactive_toggle_controller"
 application.register("inactive-toggle", InactiveToggleController)

@@ -1,7 +1,7 @@
 <%= turbo_stream.replace("event_count", partial: "event_count") %>
 <%= turbo_stream.replace("active_filters_subheader", partial: "admin/shared/active_filters_subheader") %>
 <%
-  sort_base = params.permit(:name, :resource_name, :visit_id, :props, :user_id, :time_period, :from, :to, :per_page, audience: []).to_h.symbolize_keys
+  sort_base = params.permit(:event_name, :resource_name, :visit_id, :props, :user_id, :time_period, :from, :to, :per_page, audience: []).to_h.symbolize_keys
   sort_icon = ->(column) {
     if @sort == column
       @sort_direction == "asc" ? "fa-arrow-up" : "fa-arrow-down"
@@ -23,7 +23,7 @@
     <thead class="bg-gray-50 text-gray-600 uppercase tracking-wider text-xs">
       <tr>
         <th class="px-4 py-3 text-left rounded-tl-xl"><%= sort_link.call("time", "Time") %></th>
-        <th class="px-4 py-3 text-left"><%= sort_link.call("name", "Event") %></th>
+        <th class="px-4 py-3 text-left"><%= sort_link.call("name", "Event name") %></th>
         <th class="px-4 py-3 text-left">Resource Title</th>
         <th class="px-4 py-3 text-left"><%= sort_link.call("user", "User") %></th>
         <th class="px-4 py-3 text-left">Visit ID</th>
@@ -58,7 +58,10 @@
             </td>
 
             <td class="px-4 py-3 text-gray-500">
-              <%= event.visit_id %>
+              <%= link_to event.visit_id,
+                          admin_activities_visits_path(visit_id: event.visit_id, time_period: "all_time", audience: %w[visitors users staff]),
+                          class: "text-indigo-600 hover:underline",
+                          data: { turbo: false } %>
             </td>
 
             <td class="px-4 py-3 text-gray-500 relative group">
@@ -70,25 +73,58 @@
                 <%
                   props = event.properties.dup
                   display_props = []
+                  res_type = props["resource_type"]
+                  res_id = props["resource_id"]
                   props.keys.select { |k| k.end_with?("_type") }.each do |type_key|
                     prefix = type_key.chomp("_type")
                     id_key = "#{prefix}_id"
                     if props.key?(id_key)
-                      display_props << [prefix, "#{props[type_key]}.find(#{props[id_key]})"]
+                      display_props << ["#{prefix} & ID", "#{props[type_key]} ##{props[id_key]}"]
                       props.delete(type_key)
                       props.delete(id_key)
                     end
                   end
-                  if props.key?("resource_title")
-                    display_props.unshift(["resource_title", props.delete("resource_title")])
+                  rt_key = props.keys.find { |k| k.downcase == "resource_title" }
+                  if rt_key
+                    display_props.unshift(["resource_title", props.delete(rt_key)])
                   end
                   props.each do |key, value|
-                    display_props << [key, value.is_a?(Hash) ? value.to_json : value]
+                    if value.is_a?(Hash)
+                      value.each do |sub_key, sub_val|
+                        label = "#{key}.#{sub_key}"
+                        if sub_val.is_a?(Array) && sub_val.size == 2
+                          display_props << [label, "#{sub_val[0]} → #{sub_val[1]}"]
+                        else
+                          display_props << [label, sub_val]
+                        end
+                      end
+                    elsif value.is_a?(Array)
+                      display_props << [key, value.join(", ")]
+                    else
+                      display_props << [key, value]
+                    end
                   end
                 %>
                 <div class="hidden group-hover:block absolute z-50 right-0 top-full bg-gray-900 text-gray-100 text-xs rounded-lg shadow-lg px-3 py-3 max-h-64 overflow-y-auto" style="width: 400px;">
+                  <%
+                    res_path = nil
+                    if res_type.present? && res_id.present?
+                      res_klass = res_type.safe_constantize
+                      if res_klass && res_klass < ApplicationRecord
+                        res_record = res_klass.find_by(id: res_id)
+                        res_path = polymorphic_path(res_record) if res_record
+                      end
+                    end
+                  %>
                   <% display_props.each do |key, value| %>
-                    <div class="py-1"><span class="text-indigo-300 font-semibold"><%= key %>:</span> <%= value.nil? ? "nil" : value.to_s.delete('"') %></div>
+                    <div class="py-1">
+                      <span class="text-indigo-300 font-semibold"><%= key %>:</span>
+                      <% if key == "resource_title" && res_path %>
+                        <%= link_to value.to_s.delete('"'), res_path, class: "text-indigo-200 underline hover:text-white", data: { turbo: false } %>
+                      <% else %>
+                        <%= value.nil? ? "nil" : value.to_s.delete('"') %>
+                      <% end %>
+                    </div>
                   <% end %>
                 </div>
               <% else %>

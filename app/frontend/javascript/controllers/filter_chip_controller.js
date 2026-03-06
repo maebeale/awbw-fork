@@ -30,12 +30,31 @@ export default class extends Controller {
 
     // Header-level params (audience, time_period): rebuild URL and navigate
     const url = new URL(window.location);
+
+    // Merge search form values into the URL so they aren't lost on navigation
+    if (collectionForm) {
+      const formData = new FormData(collectionForm);
+      for (const [key, val] of formData.entries()) {
+        if (!url.searchParams.has(key) && val !== "") {
+          url.searchParams.set(key, val);
+        }
+      }
+    }
+
     if (param === "audience" && value) {
-      const remaining = url.searchParams
-        .getAll("audience[]")
-        .filter((v) => v !== value);
+      const defaults = ["visitors", "users"];
+      const current = url.searchParams.has("audience[]")
+        ? url.searchParams.getAll("audience[]")
+        : defaults;
+      const remaining = current.filter((v) => v !== value);
       url.searchParams.delete("audience[]");
       remaining.forEach((v) => url.searchParams.append("audience[]", v));
+    } else if (param === "time_period") {
+      const current = url.searchParams.get("time_period") || "past_month";
+      url.searchParams.set(
+        "time_period",
+        current === "all_time" ? "past_month" : "all_time",
+      );
     } else {
       url.searchParams.delete(param);
     }

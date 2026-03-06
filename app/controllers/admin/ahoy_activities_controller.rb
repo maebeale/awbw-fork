@@ -97,18 +97,18 @@ module Admin
         base_scope = Ahoy::Visit
                        .includes(:user)
                        .left_joins(:events)
-                       .select("ahoy_visits.*, COUNT(ahoy_events.id) AS events_count")
+                       .select("ahoy_visits.*, COUNT(ahoy_events.id) AS events_count, TIMESTAMPDIFF(MINUTE, ahoy_visits.started_at, MAX(ahoy_events.time)) AS duration_minutes")
                        .group("ahoy_visits.id")
         filtered = apply_visit_filters(base_scope)
 
-        sortable = %w[started_at user events_count]
+        sortable = %w[started_at user events_count duration]
         @sort = sortable.include?(params[:sort]) ? params[:sort] : "started_at"
         @sort_direction = params[:direction] == "asc" ? "asc" : "desc"
         filtered = apply_visit_sort(filtered, @sort, @sort_direction)
 
         @visits = filtered.paginate(page: params[:page], per_page: per_page)
-        base_count = base_scope.count.size
-        filtered_count = filtered.count.size
+        base_count = base_scope.reselect("ahoy_visits.id").count.size
+        filtered_count = filtered.reselect("ahoy_visits.id").count.size
         @count_display = filtered_count == base_count ? base_count : "#{filtered_count}/#{base_count}"
 
         render :visits_lazy
@@ -149,15 +149,15 @@ module Admin
       scope = scope.where(resource_type: params[:resource_type]) if params[:resource_type].present?
       scope = scope.where(resource_id: params[:resource_id]) if params[:resource_id].present?
 
-      if params[:name].present?
-        term = Ahoy::Event.sanitize_sql_like(params[:name])
+      if params[:event_name].present?
+        term = Ahoy::Event.sanitize_sql_like(params[:event_name])
         scope = scope.where("ahoy_events.name LIKE ?", "%#{term}%")
       end
 
       if params[:resource_name].present?
         term = Ahoy::Event.sanitize_sql_like(params[:resource_name])
         scope = scope.where(
-          "JSON_UNQUOTE(JSON_EXTRACT(ahoy_events.properties, '$.resource_title')) LIKE ?",
+          "LOWER(ahoy_events.properties->>'$.resource_title') LIKE LOWER(?)",
           "%#{term}%"
         )
       end
@@ -211,6 +211,8 @@ module Admin
              .reorder(Arel.sql("users.first_name #{direction}, users.last_name #{direction}"))
       when "events_count"
         scope.reorder(Arel.sql("events_count #{direction}"))
+      when "duration"
+        scope.reorder(Arel.sql("duration_minutes #{direction}"))
       else
         scope.reorder(started_at: :desc)
       end

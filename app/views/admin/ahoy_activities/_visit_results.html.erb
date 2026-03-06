@@ -22,11 +22,12 @@
   <table class="min-w-full divide-y divide-gray-200 text-sm">
     <thead class="bg-gray-50 text-gray-600 uppercase tracking-wider text-xs">
       <tr>
-        <th class="px-4 py-3 text-left rounded-tl-xl">ID</th>
+        <th class="px-4 py-3 text-left rounded-tl-xl">Visit ID</th>
         <th class="px-4 py-3 text-left"><%= sort_link.call("started_at", "Started") %></th>
         <th class="px-4 py-3 text-left"><%= sort_link.call("user", "User") %></th>
         <th class="px-4 py-3 text-left">IP</th>
         <th class="px-4 py-3 text-left"><%= sort_link.call("events_count", "Events") %></th>
+        <th class="px-4 py-3 text-left"><%= sort_link.call("duration", "Duration") %></th>
         <th class="px-4 py-3 text-left rounded-tr-xl">User Agent</th>
       </tr>
     </thead>
@@ -59,17 +60,30 @@
 
             <td class="px-4 py-3 text-gray-500">
               <%= link_to visit.attributes["events_count"],
-                          admin_activities_events_path(visit_id: visit.id) %>
+                          admin_activities_events_path(visit_id: visit.id, time_period: "all_time", audience: %w[visitors users staff]),
+                          class: "text-indigo-600 hover:underline",
+                          data: { turbo: false } %>
             </td>
 
-            <td class="px-4 py-3 text-gray-500 max-w-xs truncate">
+            <td class="px-4 py-3 text-gray-500 whitespace-nowrap">
+              <% dm = visit.attributes["duration_minutes"] %>
+              <% if dm.nil? %>
+                <span class="text-gray-400 italic">—</span>
+              <% elsif dm < 1 %>
+                &lt; 1 min
+              <% else %>
+                <%= dm %> min
+              <% end %>
+            </td>
+
+            <td class="px-4 py-3 text-gray-500 max-w-xs truncate" title="<%= visit.user_agent %>">
               <%= visit.user_agent %>
             </td>
           </tr>
         <% end %>
       <% else %>
         <tr>
-          <td colspan="6" class="text-center py-16">
+          <td colspan="7" class="text-center py-16">
             <h2 class="text-gray-600 text-lg mb-2">No visits found</h2>
           </td>
         </tr>
