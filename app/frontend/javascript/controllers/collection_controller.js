@@ -11,6 +11,10 @@ export default class extends Controller {
         this.toggleClass(event.target);
       }
 
+      if (type === "select-one" || type === "select-multiple") {
+        this.styleSelectPlaceholder(event.target);
+      }
+
       if (
         type === "checkbox" ||
         type === "radio" ||
@@ -63,6 +67,7 @@ export default class extends Controller {
     });
     this.element.querySelectorAll('select').forEach(select => {
       select.selectedIndex = 0;
+      this.styleSelectPlaceholder(select);
     });
     this.element.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
       if (input.checked) {
@@ -72,6 +77,12 @@ export default class extends Controller {
     });
     this.element.reset();
     this.submitForm();
+  }
+
+  styleSelectPlaceholder(select) {
+    const isBlank = !select.value;
+    select.classList.toggle("text-gray-400", isBlank);
+    select.classList.toggle("text-gray-900", !isBlank);
   }
 
   blurOldResults() {
