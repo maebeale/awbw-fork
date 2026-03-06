@@ -1,3 +1,4 @@
+<div id="active_filters_subheader">
 <%
   time_period = params[:time_period].presence || "past_month"
   time_label = case time_period
@@ -16,9 +17,13 @@
   default_audiences = %w[visitors users]
   audience_values = Array(params[:audience]).reject(&:blank?).presence || default_audiences
   audience_labels = audience_values.filter_map { |v| audience_labels_map[v] }
+
+  has_search_filters = params[:name].present? || params[:resource_name].present? ||
+                       params[:visit_id].present? || params[:props].present? ||
+                       params[:user_id].present?
 %>
-<% if time_label || audience_labels.any? %>
-  <div class="flex items-center gap-2 mb-4 text-sm">
+<% if time_label || audience_labels.any? || has_search_filters %>
+  <div class="flex flex-wrap items-center gap-2 mb-4 text-sm">
     <span class="text-gray-500">Filtering:</span>
     <% if time_label %>
       <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 font-medium">
@@ -45,5 +50,14 @@
         Props: <%= params[:props] %>
       </span>
     <% end %>
+    <% if params[:user_id].present? %>
+      <% user = User.find_by(id: params[:user_id]) %>
+      <% if user %>
+        <span class="inline-flex items-center px-3 py-1 rounded-full bg-orange-100 text-orange-800 font-medium">
+          User: <%= user.full_name %>
+        </span>
+      <% end %>
+    <% end %>
   </div>
 <% end %>
+</div>

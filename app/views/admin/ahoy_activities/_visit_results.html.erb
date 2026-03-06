@@ -1,4 +1,5 @@
 <%= turbo_stream.replace("visit_count", partial: "visit_count") %>
+<%= turbo_stream.replace("active_filters_subheader", partial: "admin/shared/active_filters_subheader") %>
 <%
   sort_base = params.permit(:user_id, :visit_id, :time_period, :from, :to, :per_page, audience: []).to_h.symbolize_keys
   sort_icon = ->(column) {
