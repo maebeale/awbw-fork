@@ -44,6 +44,22 @@
 
     <div class="flex flex-wrap lg:flex-nowrap gap-4">
 
+      <!-- Date From -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">From</label>
+        <%= date_field_tag :from,
+                           params[:from],
+                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
+      </div>
+
+      <!-- Date To -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">To</label>
+        <%= date_field_tag :to,
+                           params[:to],
+                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
+      </div>
+
       <!-- User Filter -->
       <div class="flex-1 min-w-0">
         <label class="block text-sm font-medium text-gray-600 mb-1">User</label>
@@ -65,22 +81,6 @@
                              params[:visit_id],
                              placeholder: "e.g. 42",
                              class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
-      </div>
-
-      <!-- Date From -->
-      <div class="flex-1 min-w-0">
-        <label class="block text-sm font-medium text-gray-600 mb-1">From</label>
-        <%= date_field_tag :from,
-                           params[:from],
-                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
-      </div>
-
-      <!-- Date To -->
-      <div class="flex-1 min-w-0">
-        <label class="block text-sm font-medium text-gray-600 mb-1">To</label>
-        <%= date_field_tag :to,
-                           params[:to],
-                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
       </div>
 
       <!-- Clear Filters -->
