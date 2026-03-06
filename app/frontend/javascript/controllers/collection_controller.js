@@ -11,8 +11,8 @@ export default class extends Controller {
         this.toggleClass(event.target);
       }
 
-      if (type === "select-one" || type === "select-multiple") {
-        this.styleSelectPlaceholder(event.target);
+      if (type === "select-one" || type === "select-multiple" || type === "date") {
+        this.stylePlaceholder(event.target);
       }
 
       if (
@@ -64,10 +64,11 @@ export default class extends Controller {
 
     this.element.querySelectorAll('input[type="text"], input[type="search"], input[type="number"], input[type="date"]').forEach(input => {
       input.value = '';
+      if (input.type === "date") this.stylePlaceholder(input);
     });
     this.element.querySelectorAll('select').forEach(select => {
       select.selectedIndex = 0;
-      this.styleSelectPlaceholder(select);
+      this.stylePlaceholder(select);
     });
     this.element.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
       if (input.checked) {
@@ -79,10 +80,10 @@ export default class extends Controller {
     this.submitForm();
   }
 
-  styleSelectPlaceholder(select) {
-    const isBlank = !select.value;
-    select.classList.toggle("text-gray-400", isBlank);
-    select.classList.toggle("text-gray-900", !isBlank);
+  stylePlaceholder(el) {
+    const isBlank = !el.value;
+    el.classList.toggle("text-gray-500", isBlank);
+    el.classList.toggle("text-gray-900", !isBlank);
   }
 
   blurOldResults() {
