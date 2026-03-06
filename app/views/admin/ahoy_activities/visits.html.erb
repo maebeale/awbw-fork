@@ -30,7 +30,9 @@
   <%= form_with url: admin_activities_visits_path,
                 method: :get,
                 data: { controller: "collection",
-                        turbo_frame: "visit_results" },
+                        turbo_frame: "visit_results",
+                        "form-type": "other",
+                        lpignore: "true" },
                 autocomplete: "off",
                 class: "bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6" do %>
 
