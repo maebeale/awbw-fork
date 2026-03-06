@@ -63,7 +63,7 @@
     <% end %>
     <% if params[:resource_name].present? %>
       <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 font-medium">
-        Resource: <%= params[:resource_name] %>
+        Resource title: <%= params[:resource_name] %>
         <button type="button" data-action="filter-chip#remove" data-param="resource_name"
                 class="ml-0.5 text-green-600 hover:text-green-900">&times;</button>
       </span>
