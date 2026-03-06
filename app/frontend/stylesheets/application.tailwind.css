@@ -106,8 +106,8 @@ select.select-placeholder {
   font-size: 0.875rem !important;
 }
 
-/* Grey out date picker calendar icon when input is empty */
-input[type="date"].text-gray-500::-webkit-calendar-picker-indicator {
+/* Grey out date picker calendar icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.4;
 }
 
