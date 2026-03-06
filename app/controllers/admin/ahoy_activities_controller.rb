@@ -5,72 +5,25 @@ module Admin
     def index
       authorize! :ahoy_activity, to: :index?
 
-      @users = params[:user_id].present? ? User.where(id: params[:user_id].to_s.split("--")) : nil
+      if turbo_frame_request?
+        per_page = params[:per_page].presence&.to_i || 20
+        base_scope = Ahoy::Event.includes(:user, :visit)
+        filtered = apply_event_filters(base_scope)
 
-      page = params[:page].presence&.to_i || 1
-      per_page = params[:per_page].presence&.to_i || 20
+        sortable = %w[time name user]
+        @sort = sortable.include?(params[:sort]) ? params[:sort] : "time"
+        @sort_direction = params[:direction] == "asc" ? "asc" : "desc"
+        filtered = apply_event_sort(filtered, @sort, @sort_direction)
 
-      scope = Ahoy::Event.includes(:user, :visit).order(time: :desc)
+        @events = filtered.paginate(page: params[:page], per_page: per_page)
+        base_count = base_scope.count
+        filtered_count = filtered.count
+        @count_display = filtered_count == base_count ? base_count : "#{filtered_count}/#{base_count}"
 
-      # Only real content interactions (not search/filter noise)
-      if params[:prefixes].present?
-        prefixes = params[:prefixes].split("--").map(&:strip)
+        render :index_lazy
       else
-        prefixes = nil # %w[ create update destroy auth ] # view browse print download
+        render :index
       end
-      if prefixes.present?
-        scope = scope.where(prefixes.map { |p| "ahoy_events.name LIKE ?" }.join(" OR "),
-                            *prefixes.map { |p| "#{p}.%" })
-      end
-
-      # Filter by event name
-      if params[:event_name].present?
-        scope = scope.where("ahoy_events.name LIKE ?", "%#{Ahoy::Event.sanitize_sql_like(params[:event_name])}%")
-      end
-
-      # Filter by user (if viewing specific user activity)
-      scope = scope.where(user: @users) if @users.present?
-
-      # Time filter
-      scope = scope.where(time: time_range) if time_range.present?
-
-      if params[:from].present?
-        from_time = Time.zone.parse(params[:from]).beginning_of_day
-        scope = scope.where("ahoy_events.time >= ?", from_time)
-      end
-
-      if params[:to].present?
-        to_time = Time.zone.parse(params[:to]).end_of_day
-        scope = scope.where("ahoy_events.time <= ?", to_time)
-      end
-
-      # Filter by visit
-      if params[:visit_id].present?
-        scope = scope.where(visit_id: params[:visit_id])
-      end
-
-      # Filter by props (full-text search across properties JSON)
-      if params[:props].present?
-        term = Ahoy::Event.sanitize_sql_like(params[:props])
-        scope = scope.where(
-          "CAST(ahoy_events.properties AS CHAR) LIKE ?",
-          "%#{term}%"
-        )
-      end
-
-      # Audience filter
-      scope = apply_audience_filter(scope)
-
-      # Filter by resource type and ID
-      if params[:resource_type].present?
-        scope = scope.where(resource_type: params[:resource_type])
-      end
-
-      if params[:resource_id].present?
-        scope = scope.where(resource_id: params[:resource_id])
-      end
-
-      @events = scope.paginate(page: page, per_page: per_page)
     end
 
     def show
@@ -82,44 +35,29 @@ module Admin
     def visits
       authorize! :ahoy_activity, to: :visits?
 
-      page     = params[:page].presence&.to_i || 1
-      per_page = params[:per_page].presence&.to_i || 20
+      if turbo_frame_request?
+        per_page = params[:per_page].presence&.to_i || 20
+        base_scope = Ahoy::Visit
+                       .includes(:user)
+                       .left_joins(:events)
+                       .select("ahoy_visits.*, COUNT(ahoy_events.id) AS events_count")
+                       .group("ahoy_visits.id")
+        filtered = apply_visit_filters(base_scope)
 
-      scope = Ahoy::Visit
-                .includes(:user)
-                .left_joins(:events)
-                .select("ahoy_visits.*, COUNT(ahoy_events.id) AS events_count")
-                .group("ahoy_visits.id")
-                .order(started_at: :desc)
+        sortable = %w[started_at user events_count]
+        @sort = sortable.include?(params[:sort]) ? params[:sort] : "started_at"
+        @sort_direction = params[:direction] == "asc" ? "asc" : "desc"
+        filtered = apply_visit_sort(filtered, @sort, @sort_direction)
 
-      # Filter by user
-      if params[:user_id].present?
-        scope = scope.where(user_id: params[:user_id])
+        @visits = filtered.paginate(page: params[:page], per_page: per_page)
+        base_count = base_scope.count.size
+        filtered_count = filtered.count.size
+        @count_display = filtered_count == base_count ? base_count : "#{filtered_count}/#{base_count}"
+
+        render :visits_lazy
+      else
+        render :visits
       end
-
-      # Filter by visit
-      if params[:visit_id].present?
-        scope = scope.where(id: params[:visit_id])
-      end
-
-      # Time period filter
-      scope = scope.where(started_at: time_range) if time_range
-
-      # Audience filter
-      scope = apply_audience_filter(scope)
-
-      # Date filtering
-      if params[:from].present?
-        from_time = Time.zone.parse(params[:from]).beginning_of_day
-        scope = scope.where("ahoy_visits.started_at >= ?", from_time)
-      end
-
-      if params[:to].present?
-        to_time = Time.zone.parse(params[:to]).end_of_day
-        scope = scope.where("ahoy_visits.started_at <= ?", to_time)
-      end
-
-      @visits = scope.paginate(page: page, per_page: per_page)
     end
 
     def charts
@@ -131,6 +69,95 @@ module Admin
     end
 
     private
+
+    def apply_event_filters(scope)
+      scope = scope.where(user_id: params[:user_id]) if params[:user_id].present?
+      scope = scope.where(time: time_range) if time_range.present?
+
+      if params[:from].present?
+        scope = scope.where("ahoy_events.time >= ?", Time.zone.parse(params[:from]).beginning_of_day)
+      end
+      if params[:to].present?
+        scope = scope.where("ahoy_events.time <= ?", Time.zone.parse(params[:to]).end_of_day)
+      end
+
+      if params[:prefixes].present?
+        prefixes = params[:prefixes].split("--").map(&:strip)
+        scope = scope.where(prefixes.map { "ahoy_events.name LIKE ?" }.join(" OR "),
+                            *prefixes.map { |p| "#{p}.%" })
+      end
+
+      scope = scope.where(visit_id: params[:visit_id]) if params[:visit_id].present?
+      scope = apply_audience_filter(scope)
+      scope = scope.where(resource_type: params[:resource_type]) if params[:resource_type].present?
+      scope = scope.where(resource_id: params[:resource_id]) if params[:resource_id].present?
+
+      if params[:name].present?
+        term = Ahoy::Event.sanitize_sql_like(params[:name])
+        scope = scope.where("ahoy_events.name LIKE ?", "%#{term}%")
+      end
+
+      if params[:resource_name].present?
+        term = Ahoy::Event.sanitize_sql_like(params[:resource_name])
+        scope = scope.where(
+          "JSON_UNQUOTE(JSON_EXTRACT(ahoy_events.properties, '$.resource_title')) LIKE ?",
+          "%#{term}%"
+        )
+      end
+
+      if params[:props].present?
+        term = Ahoy::Event.sanitize_sql_like(params[:props])
+        scope = scope.where("CAST(ahoy_events.properties AS CHAR) LIKE ?", "%#{term}%")
+      end
+
+      scope
+    end
+
+    def apply_event_sort(scope, column, direction)
+      dir = direction.to_sym
+      case column
+      when "time"
+        scope.reorder(time: dir)
+      when "name"
+        scope.reorder(name: dir)
+      when "user"
+        scope.left_joins(:user)
+             .reorder(Arel.sql("users.first_name #{direction}, users.last_name #{direction}"))
+      else
+        scope.reorder(time: :desc)
+      end
+    end
+
+    def apply_visit_filters(scope)
+      scope = scope.where(user_id: params[:user_id]) if params[:user_id].present?
+      scope = scope.where(id: params[:visit_id]) if params[:visit_id].present?
+      scope = scope.where(started_at: time_range) if time_range
+      scope = apply_audience_filter(scope)
+
+      if params[:from].present?
+        scope = scope.where("ahoy_visits.started_at >= ?", Time.zone.parse(params[:from]).beginning_of_day)
+      end
+      if params[:to].present?
+        scope = scope.where("ahoy_visits.started_at <= ?", Time.zone.parse(params[:to]).end_of_day)
+      end
+
+      scope
+    end
+
+    def apply_visit_sort(scope, column, direction)
+      dir = direction.to_sym
+      case column
+      when "started_at"
+        scope.reorder(started_at: dir)
+      when "user"
+        scope.left_joins(:user)
+             .reorder(Arel.sql("users.first_name #{direction}, users.last_name #{direction}"))
+      when "events_count"
+        scope.reorder(Arel.sql("events_count #{direction}"))
+      else
+        scope.reorder(started_at: :desc)
+      end
+    end
 
     def prepare_chart_data
       events = scoped_events

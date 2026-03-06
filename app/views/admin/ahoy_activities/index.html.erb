@@ -1,226 +1,131 @@
 <% content_for(:page_bg_class, "admin-only bg-blue-100") %>
 <div class="<%= DomainTheme.bg_class_for(:admin_only) %> border border-gray-200 rounded-xl shadow p-6">
 
-      <!-- Page Header -->
-      <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-semibold text-gray-900">Activities</h1>
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold text-gray-900">Activities</h1>
+  </div>
 
-        <div class="text-sm text-gray-500">
-          <%= @events.count %> activities
-        </div>
+  <%= render "admin/shared/activities_tabs" %>
+
+  <!-- Filters -->
+  <%= form_with url: admin_activities_events_path,
+                method: :get,
+                data: { controller: "collection",
+                        turbo_frame: "event_results" },
+                autocomplete: "off",
+                class: "bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6" do %>
+
+    <div class="flex flex-wrap lg:flex-nowrap gap-4">
+
+      <!-- Event Name -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Event Name</label>
+        <%= text_field_tag :name,
+                           params[:name],
+                           placeholder: "e.g. view.workshop",
+                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500",
+                           oninput: "this.form.requestSubmit()" %>
       </div>
 
-      <%= render "admin/shared/activities_tabs" %>
-
-      <%= render "admin/shared/active_filters_subheader" %>
-
-      <!-- Filters -->
-      <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
-        <%= form_with url: request.path, method: :get, local: true do %>
-
-          <div class="flex flex-wrap lg:flex-nowrap gap-4">
-
-            <!-- Activity Name -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-600 mb-1">
-                Activity name
-              </label>
-              <%= text_field_tag :event_name,
-                                 params[:event_name],
-                                 placeholder: "e.g. Viewed Workshop",
-                                 class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
-            </div>
-
-            <!-- Visit ID -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-600 mb-1">
-                Visit ID
-              </label>
-              <%= number_field_tag :visit_id,
-                                   params[:visit_id],
-                                   placeholder: "e.g. 42",
-                                   class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
-            </div>
-
-            <!-- Props -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-600 mb-1">
-                Props
-              </label>
-              <%= text_field_tag :props,
-                                 params[:props],
-                                 placeholder: "Search properties...",
-                                 class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
-            </div>
-
-            <!-- User Filter -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-600 mb-1">
-                User
-              </label>
-              <%= select_tag :user_id,
-                             options_from_collection_for_select(
-                               User.where(id: Ahoy::Visit.select(:user_id).distinct).order(:first_name, :last_name),
-                               :id,
-                               :full_name,
-                               params[:user_id]
-                             ),
-                             include_blank: "All Users",
-                             class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
-            </div>
-
-            <!-- Audience -->
-            <div class="flex-1 min-w-0">
-              <%= render "admin/shared/audience_dropdown", auto_submit: false, stacked: true %>
-            </div>
-
-            <!-- Time Period -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-600 mb-1">
-                Time Period
-              </label>
-              <%= select_tag :time_period,
-                             options_for_select(
-                               [["All time", "all_time"], ["Past day", "past_day"], ["Past week", "past_week"], ["Past month", "past_month"], ["Past year", "past_year"]],
-                               params[:time_period] || "past_month"
-                             ),
-                             class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
-            </div>
-
-            <!-- Date From -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-600 mb-1">
-                From
-              </label>
-              <%= date_field_tag :from,
-                                 params[:from],
-                                 class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
-            </div>
-
-            <!-- Date To -->
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-gray-600 mb-1">
-                To
-              </label>
-              <%= date_field_tag :to,
-                                 params[:to],
-                                 class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
-            </div>
-
-          </div>
-
-          <!-- Quick Ranges -->
-          <div class="flex items-center gap-3 mt-6 text-sm">
-            <span class="text-gray-500">Quick:</span>
-            <% safe_params = params.slice(:event_name, :visit_id, :props, :user_id, :from, :to).to_unsafe_h %>
-            <%= link_to "24h",
-                        url_for(safe_params.merge(from: 1.day.ago.to_date)),
-                        class: "text-indigo-600 hover:underline" %>
-
-            <%= link_to "7d",
-                        url_for(safe_params.merge(from: 7.days.ago.to_date)),
-                        class: "text-indigo-600 hover:underline" %>
-
-            <%= link_to "30d",
-                        url_for(safe_params.merge(from: 30.days.ago.to_date)),
-                        class: "text-indigo-600 hover:underline" %>
-          </div>
-
-          <div class="mt-6">
-            <%= submit_tag "Filter",
-                           class: "bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition" %>
-          </div>
-
-        <% end %>
+      <!-- Resource Name -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Resource Name</label>
+        <%= text_field_tag :resource_name,
+                           params[:resource_name],
+                           placeholder: "e.g. My Workshop",
+                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500",
+                           oninput: "this.form.requestSubmit()" %>
       </div>
 
-      <!-- Activities Table -->
-      <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
-        <table class="responsive-table min-w-full divide-y divide-gray-200 text-sm">
-          <thead class="bg-gray-50 text-gray-600 uppercase tracking-wider text-xs">
-          <tr>
-            <th class="px-4 py-3 text-left rounded-tl-xl">Time</th>
-            <th class="px-4 py-3 text-left">Activity</th>
-            <th class="px-4 py-3 text-left">Resource</th>
-            <th class="px-4 py-3 text-left">User</th>
-            <th class="px-4 py-3 text-left">Visit ID</th>
-            <th class="px-4 py-3 text-left rounded-tr-xl">Properties</th>
-          </tr>
-          </thead>
-
-          <tbody class="divide-y divide-gray-100">
-          <% @events.each do |event| %>
-            <tr class="hover:bg-gray-50 transition">
-              <td data-label="Time" class="px-4 py-3 whitespace-nowrap text-gray-500">
-                <%= event.time.in_time_zone.strftime("%Y-%m-%d %H:%M %Z") %>
-              </td>
-
-              <td data-label="Activity" class="px-4 py-3 font-medium text-gray-900">
-                <%= event.name %>
-              </td>
-
-              <td data-label="Resource" class="px-4 py-3 text-gray-500">
-                <%= event.properties["resource_title"].presence || "—" %>
-              </td>
-
-              <td data-label="User" class="px-4 py-3 text-gray-600">
-                <% if event.user %>
-                  <%= link_to event.user.full_name,
-                              user_path(event.user),
-                              class: "text-indigo-600 hover:underline" %>
-                <% else %>
-                  <span class="text-gray-400 italic">Guest</span>
-                <% end %>
-              </td>
-
-              <td data-label="Visit ID" class="px-4 py-3 text-gray-500">
-                <%= event.visit_id %>
-              </td>
-
-              <td data-label="Properties" class="px-4 py-3 text-gray-500 relative group">
-                <% if event.properties.present? && event.properties.any? %>
-                  <%= link_to admin_activities_event_path(event),
-                              class: "cursor-default text-indigo-600 text-xs font-medium bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100" do %>
-                    <%= event.properties.size %> <%= "prop".pluralize(event.properties.size) %>
-                  <% end %>
-                  <%
-                    props = event.properties.dup
-                    display_props = []
-                    # Combine polymorphic _type/_id pairs
-                    props.keys.select { |k| k.end_with?("_type") }.each do |type_key|
-                      prefix = type_key.chomp("_type")
-                      id_key = "#{prefix}_id"
-                      if props.key?(id_key)
-                        display_props << [prefix, "#{props[type_key]}.find(#{props[id_key]})"]
-                        props.delete(type_key)
-                        props.delete(id_key)
-                      end
-                    end
-                    # Show resource_title first, then remaining props
-                    if props.key?("resource_title")
-                      display_props.unshift(["resource_title", props.delete("resource_title")])
-                    end
-                    props.each do |key, value|
-                      display_props << [key, value.is_a?(Hash) ? value.to_json : value]
-                    end
-                  %>
-                  <div class="hidden group-hover:block absolute z-50 right-0 top-full bg-gray-900 text-gray-100 text-xs rounded-lg shadow-lg px-3 py-3 max-h-64 overflow-y-auto" style="width: 400px;">
-                    <% display_props.each do |key, value| %>
-                      <div class="py-1"><span class="text-indigo-300 font-semibold"><%= key %>:</span> <%= value.nil? ? "nil" : value.to_s.delete('"') %></div>
-                    <% end %>
-                  </div>
-                <% else %>
-                  <span class="text-gray-300 italic">none</span>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-          </tbody>
-        </table>
+      <!-- Visit ID -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Visit ID</label>
+        <%= number_field_tag :visit_id,
+                             params[:visit_id],
+                             placeholder: "e.g. 42",
+                             class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500",
+                             oninput: "this.form.requestSubmit()" %>
       </div>
 
-      <!-- Pagination -->
-      <div class="flex justify-center mt-8">
-        <%= tailwind_paginate @events %>
+      <!-- Props -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Props</label>
+        <%= text_field_tag :props,
+                           params[:props],
+                           placeholder: "Search properties...",
+                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500",
+                           oninput: "this.form.requestSubmit()" %>
       </div>
+
+    </div>
+
+    <div class="flex flex-wrap lg:flex-nowrap gap-4 mt-4">
+
+      <!-- User Filter -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">User</label>
+        <%= select_tag :user_id,
+                       options_from_collection_for_select(
+                         User.where(id: Ahoy::Visit.select(:user_id).distinct).order(:first_name, :last_name),
+                         :id,
+                         :full_name,
+                         params[:user_id]
+                       ),
+                       include_blank: "All Users",
+                       class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
+      </div>
+
+      <!-- Audience -->
+      <div class="flex-1 min-w-0">
+        <%= render "admin/shared/audience_dropdown", auto_submit: false, stacked: true %>
+      </div>
+
+      <!-- Time Period -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Time Period</label>
+        <%= select_tag :time_period,
+                       options_for_select(
+                         [["All time", "all_time"], ["Past day", "past_day"], ["Past week", "past_week"], ["Past month", "past_month"], ["Past year", "past_year"]],
+                         params[:time_period] || "past_month"
+                       ),
+                       class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
+      </div>
+
+      <!-- Date From -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">From</label>
+        <%= date_field_tag :from,
+                           params[:from],
+                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
+      </div>
+
+      <!-- Date To -->
+      <div class="flex-1 min-w-0">
+        <label class="block text-sm font-medium text-gray-600 mb-1">To</label>
+        <%= date_field_tag :to,
+                           params[:to],
+                           class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm" %>
+      </div>
+
+      <!-- Clear Filters -->
+      <div class="flex-1 min-w-0 flex items-end">
+        <%= link_to "Clear filters",
+                    admin_activities_events_path,
+                    class: "btn btn-utility",
+                    data: { action: "collection#clearAndSubmit" } %>
+      </div>
+
+    </div>
+
+  <% end %>
+
+  <!-- Count -->
+  <%= render "event_count" %>
+
+  <!-- Results Frame -->
+  <% result_src = admin_activities_events_path + "?" + request.query_string %>
+  <%= turbo_frame_tag "event_results", src: result_src do %>
+    <%= render "events_skeleton" %>
+  <% end %>
 </div>
