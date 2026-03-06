@@ -106,6 +106,15 @@ select.select-placeholder {
   font-size: 0.875rem !important;
 }
 
+/* Grey out select text when blank/placeholder option is selected */
+select:has(> option[value=""]:checked) {
+  color: #9ca3af;
+}
+
+select option {
+  color: #111827;
+}
+
 .is-active {
   @apply text-primary border-b-2 border-primary font-bold bg-gray-100;
 }
