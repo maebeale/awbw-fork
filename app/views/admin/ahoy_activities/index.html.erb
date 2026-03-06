@@ -4,9 +4,29 @@
   <!-- Page Header -->
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-semibold text-gray-900">Activities</h1>
+    <%= form_with url: admin_activities_events_path, method: :get, local: true,
+                  class: "flex items-center gap-4" do %>
+      <% %i[name resource_name visit_id props user_id from to].each do |key| %>
+        <%= hidden_field_tag key, params[key] if params[key].present? %>
+      <% end %>
+      <%= render "admin/shared/audience_dropdown" %>
+
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">Time period:</label>
+        <%= select_tag :time_period,
+                       options_for_select(
+                         [["All time", "all_time"], ["Past day", "past_day"], ["Past week", "past_week"], ["Past month", "past_month"], ["Past year", "past_year"]],
+                         params[:time_period] || "past_month"
+                       ),
+                       class: "px-3 py-2 rounded-md border-gray-300 shadow-sm text-sm text-gray-700",
+                       onchange: "this.form.submit()" %>
+      </div>
+    <% end %>
   </div>
 
   <%= render "admin/shared/activities_tabs" %>
+
+  <%= render "admin/shared/active_filters_subheader" %>
 
   <!-- Filters -->
   <%= form_with url: admin_activities_events_path,
@@ -15,6 +35,12 @@
                         turbo_frame: "event_results" },
                 autocomplete: "off",
                 class: "bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6" do %>
+
+    <% # Carry audience + time_period through the turbo frame form %>
+    <% Array(params[:audience]).reject(&:blank?).each do |aud| %>
+      <%= hidden_field_tag "audience[]", aud %>
+    <% end %>
+    <%= hidden_field_tag :time_period, params[:time_period] || "past_month" %>
 
     <div class="flex flex-wrap lg:flex-nowrap gap-4">
 
@@ -58,10 +84,6 @@
                            oninput: "this.form.requestSubmit()" %>
       </div>
 
-    </div>
-
-    <div class="flex flex-wrap lg:flex-nowrap gap-4 mt-4">
-
       <!-- User Filter -->
       <div class="flex-1 min-w-0">
         <label class="block text-sm font-medium text-gray-600 mb-1">User</label>
@@ -73,22 +95,6 @@
                          params[:user_id]
                        ),
                        include_blank: "All Users",
-                       class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
-      </div>
-
-      <!-- Audience -->
-      <div class="flex-1 min-w-0">
-        <%= render "admin/shared/audience_dropdown", auto_submit: false, stacked: true %>
-      </div>
-
-      <!-- Time Period -->
-      <div class="flex-1 min-w-0">
-        <label class="block text-sm font-medium text-gray-600 mb-1">Time Period</label>
-        <%= select_tag :time_period,
-                       options_for_select(
-                         [["All time", "all_time"], ["Past day", "past_day"], ["Past week", "past_week"], ["Past month", "past_month"], ["Past year", "past_year"]],
-                         params[:time_period] || "past_month"
-                       ),
                        class: "w-full px-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %>
       </div>
 
