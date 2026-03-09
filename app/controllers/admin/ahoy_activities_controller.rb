@@ -178,8 +178,9 @@ module Admin
       when "name"
         scope.reorder(name: dir)
       when "user"
-        scope.left_joins(:user)
-             .reorder(Arel.sql("users.first_name #{direction}, users.last_name #{direction}"))
+        user_sort = { "asc" => "users.first_name ASC, users.last_name ASC",
+                      "desc" => "users.first_name DESC, users.last_name DESC" }
+        scope.left_joins(:user).reorder(Arel.sql(user_sort[direction]))
       else
         scope.reorder(time: :desc)
       end
@@ -207,12 +208,13 @@ module Admin
       when "started_at"
         scope.reorder(started_at: dir)
       when "user"
-        scope.left_joins(:user)
-             .reorder(Arel.sql("users.first_name #{direction}, users.last_name #{direction}"))
+        user_sort = { "asc" => "users.first_name ASC, users.last_name ASC",
+                      "desc" => "users.first_name DESC, users.last_name DESC" }
+        scope.left_joins(:user).reorder(Arel.sql(user_sort[direction]))
       when "events_count"
-        scope.reorder(Arel.sql("events_count #{direction}"))
+        scope.reorder(Arel.sql(dir == :asc ? "events_count ASC" : "events_count DESC"))
       when "duration"
-        scope.reorder(Arel.sql("duration_minutes #{direction}"))
+        scope.reorder(Arel.sql(dir == :asc ? "duration_minutes ASC" : "duration_minutes DESC"))
       else
         scope.reorder(started_at: :desc)
       end
