@@ -24,63 +24,6 @@ module Admin
       else
         render :index
       end
-      if prefixes.present?
-        scope = scope.where(prefixes.map { |p| "ahoy_events.name LIKE ?" }.join(" OR "),
-                            *prefixes.map { |p| "#{p}.%" })
-      end
-
-      # Filter by user (if viewing specific user activity)
-      scope = scope.where(user: @users) if @users.present?
-
-      # Time filter
-      scope = scope.where(time: time_range) if time_range.present?
-
-      if params[:from].present?
-        from_time = Time.zone.parse(params[:from]).beginning_of_day
-        scope = scope.where("ahoy_events.time >= ?", from_time)
-      end
-
-      if params[:to].present?
-        to_time = Time.zone.parse(params[:to]).end_of_day
-        scope = scope.where("ahoy_events.time <= ?", to_time)
-      end
-
-      # Filter by visit
-      if params[:visit_id].present?
-        scope = scope.where(visit_id: params[:visit_id])
-      end
-
-      # Filter by resource name (resource_title in properties JSON)
-      if params[:resource_name].present?
-        term = Ahoy::Event.sanitize_sql_like(params[:resource_name])
-        scope = scope.where(
-          "ahoy_events.properties->>'$.resource_title' LIKE ?",
-          "%#{term}%"
-        )
-      end
-
-      # Filter by props (full-text search across properties JSON)
-      if params[:props].present?
-        term = Ahoy::Event.sanitize_sql_like(params[:props])
-        scope = scope.where(
-          "CAST(ahoy_events.properties AS CHAR) LIKE ?",
-          "%#{term}%"
-        )
-      end
-
-      # Audience filter
-      scope = apply_audience_filter(scope)
-
-      # Filter by resource type and ID
-      if params[:resource_type].present?
-        scope = scope.where(resource_type: params[:resource_type])
-      end
-
-      if params[:resource_id].present?
-        scope = scope.where(resource_id: params[:resource_id])
-      end
-
-      @events = scope.paginate(page: page, per_page: per_page)
     end
 
     def show
