@@ -188,14 +188,16 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
       end
 
       it "filters visits by user_id" do
-        get visits_path, params: { user_id: user.id }
+        get visits_path, params: { user_id: user.id, time_period: "all_time" },
+            headers: { "Turbo-Frame" => "visit_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(user.full_name)
       end
 
       it "filters visits by visit_id" do
-        get visits_path, params: { visit_id: visit_for_user.id }
+        get visits_path, params: { visit_id: visit_for_user.id, time_period: "all_time" },
+            headers: { "Turbo-Frame" => "visit_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(visit_for_user.id.to_s)
@@ -206,7 +208,8 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
             params: {
               from: 3.days.ago.to_date.to_s,
               to: 1.day.ago.to_date.to_s
-            }
+            },
+            headers: { "Turbo-Frame" => "visit_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(visit_for_user.id.to_s)
