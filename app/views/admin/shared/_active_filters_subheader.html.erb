@@ -20,7 +20,8 @@
   audience_labels = audience_values.filter_map { |v| [v, audience_labels_map[v]] }.select(&:last)
 
   has_search_filters = params[:event_name].present? || params[:resource_name].present? ||
-                       params[:visit_id].present? || params[:props].present? ||
+                       params[:visit_id].present? || params[:ip].present? ||
+                       params[:user_agent].present? || params[:props].present? ||
                        params[:user_id].present? || params[:from].present? ||
                        params[:to].present?
 %>
@@ -67,6 +68,20 @@
         Resource title: <%= params[:resource_name] %>
         <button type="button" data-action="filter-chip#remove" data-param="resource_name"
                 class="ml-0.5 text-green-600 hover:text-green-900">&times;</button>
+      </span>
+    <% end %>
+    <% if params[:ip].present? %>
+      <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
+        IP: <%= params[:ip] %>
+        <button type="button" data-action="filter-chip#remove" data-param="ip"
+                class="ml-0.5 text-yellow-600 hover:text-yellow-900">&times;</button>
+      </span>
+    <% end %>
+    <% if params[:user_agent].present? %>
+      <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
+        User agent: <%= params[:user_agent] %>
+        <button type="button" data-action="filter-chip#remove" data-param="user_agent"
+                class="ml-0.5 text-yellow-600 hover:text-yellow-900">&times;</button>
       </span>
     <% end %>
     <% if params[:visit_id].present? %>

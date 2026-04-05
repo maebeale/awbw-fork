@@ -132,6 +132,8 @@ module Admin
     def apply_visit_filters(scope)
       scope = scope.where(user_id: params[:user_id]) if params[:user_id].present?
       scope = scope.where(id: params[:visit_id]) if params[:visit_id].present?
+      scope = scope.where(ip: params[:ip]) if params[:ip].present?
+      scope = scope.where("ahoy_visits.user_agent LIKE ?", "%#{Ahoy::Visit.sanitize_sql_like(params[:user_agent])}%") if params[:user_agent].present?
       scope = scope.where(started_at: time_range) if time_range
       scope = apply_audience_filter(scope)
 

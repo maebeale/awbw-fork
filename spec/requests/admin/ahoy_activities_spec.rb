@@ -6,8 +6,8 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
   let(:user)  { create(:user, super_user: false) }
 
   # Minimal Ahoy data for filter assertions (only used in admin context)
-  let!(:visit_for_user)  { create(:ahoy_visit, user: user, started_at: 2.days.ago) }
-  let!(:visit_for_admin) { create(:ahoy_visit, user: admin, started_at: 1.day.ago) }
+  let!(:visit_for_user)  { create(:ahoy_visit, user: user, started_at: 2.days.ago, ip: "10.0.0.1", user_agent: "Mozilla/5.0 Chrome/125") }
+  let!(:visit_for_admin) { create(:ahoy_visit, user: admin, started_at: 1.day.ago, ip: "10.0.0.2", user_agent: "Mozilla/5.0 Safari/605") }
 
   let!(:auth_event) do
     create(
@@ -201,6 +201,24 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(visit_for_user.id.to_s)
+      end
+
+      it "filters visits by ip" do
+        get visits_path, params: { ip: "10.0.0.1", time_period: "all_time" },
+            headers: { "Turbo-Frame" => "visit_results" }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("10.0.0.1")
+        expect(response.body).not_to include("10.0.0.2")
+      end
+
+      it "filters visits by user_agent" do
+        get visits_path, params: { user_agent: "Chrome", time_period: "all_time" },
+            headers: { "Turbo-Frame" => "visit_results" }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Chrome/125")
+        expect(response.body).not_to include("Safari/605")
       end
 
       it "filters visits by from/to dates" do
