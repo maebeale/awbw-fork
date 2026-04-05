@@ -133,7 +133,8 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
       end
 
       it "filters by prefixes=auth" do
-        get index_path, params: { prefixes: "auth" }
+        get index_path, params: { prefixes: "auth", time_period: "all_time" },
+            headers: { "Turbo-Frame" => "event_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("auth.login")
@@ -141,7 +142,8 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
       end
 
       it "filters by visit_id" do
-        get index_path, params: { visit_id: visit_for_user.id }
+        get index_path, params: { visit_id: visit_for_user.id, time_period: "all_time" },
+            headers: { "Turbo-Frame" => "event_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("create.bookmark")
@@ -152,7 +154,8 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
             params: {
               from: 3.days.ago.to_date.to_s,
               to: 1.day.ago.to_date.to_s
-            }
+            },
+            headers: { "Turbo-Frame" => "event_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("create.bookmark")
@@ -160,7 +163,8 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
       end
 
       it "filters by event name" do
-        get index_path, params: { event_name: "auth.login", time_period: "all_time" }
+        get index_path, params: { event_name: "auth.login", time_period: "all_time" },
+            headers: { "Turbo-Frame" => "event_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("auth.login")
@@ -168,7 +172,8 @@ RSpec.describe "Admin::AhoyActivities", type: :request do
       end
 
       it "filters by partial event name" do
-        get index_path, params: { event_name: "bookmark", time_period: "all_time" }
+        get index_path, params: { event_name: "bookmark", time_period: "all_time" },
+            headers: { "Turbo-Frame" => "event_results" }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("create.bookmark")
