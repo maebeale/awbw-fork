@@ -86,7 +86,7 @@ class FormBuilderService
       "Organization Country"
     ],
     person_background: [ "How would you best describe yourself?" ],
-    professional_info: [ "Primary sector", "Additional sectors", "Primary Age Group(s) Served", "Additional Age Group(s) Served" ],
+    professional_info: [ "Primary sector", "Additional sectors", "Primary age group served", "Additional age groups served" ],
     marketing: [
       "How did you hear about this AWBW training?",
       "What motivated you to sign up for AWBW's Facilitator Training?",
