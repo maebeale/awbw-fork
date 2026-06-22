@@ -276,7 +276,7 @@ module EventRegistrationServices
       primary_sector_ids = collect_sector_ids(FormField::PRIMARY_SECTOR_FIELD_IDENTIFIERS)
       additional_sector_ids = collect_sector_ids(FormField::ADDITIONAL_SECTOR_FIELD_IDENTIFIERS)
       primary_age_ids = collect_ids_from_checkboxes("primary_age_group")
-      additional_age_ids = collect_ids_from_checkboxes("additional_age_group")
+      additional_age_ids = FormField::ADDITIONAL_AGE_GROUP_FIELD_IDENTIFIERS.flat_map { |id| collect_ids_from_checkboxes(id) }
 
       if primary_sector_ids.any? || additional_sector_ids.any?
         person.tag_sectors(primary_ids: primary_sector_ids, additional_ids: additional_sector_ids)

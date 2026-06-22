@@ -445,11 +445,19 @@ RSpec.describe FormField do
         type = create(:category_type, name: "AgeRange")
         concrete = create(:category, :published, category_type: type, name: "3-5")
         mixed = create(:category, :published, category_type: type, name: Category::MIXED_AGE_RANGE_NAME)
-        field = create(:form_field, form: form, answer_type: :multi_select_checkbox, field_identifier: "additional_age_group")
+        field = create(:form_field, form: form, answer_type: :multi_select_checkbox, field_identifier: "additional_age_groups")
 
         expect(field.dynamic_categories).to eq([ concrete ])
         expect(field.answer_inclusion_error([ concrete.id.to_s ])).to be_nil
         expect(field.answer_inclusion_error([ mixed.id.to_s ])).to eq("has an invalid selection")
+      end
+
+      it "still resolves the legacy singular additional_age_group identifier" do
+        type = create(:category_type, name: "AgeRange")
+        concrete = create(:category, :published, category_type: type, name: "3-5")
+        field = create(:form_field, form: form, answer_type: :multi_select_checkbox, field_identifier: "additional_age_group")
+
+        expect(field.dynamic_categories).to eq([ concrete ])
       end
     end
   end

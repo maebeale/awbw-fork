@@ -185,7 +185,7 @@ RSpec.describe EventRegistrationServices::PublicRegistration do
         form: form,
         form_params: base_form_params(first_name: "Al", last_name: "Ng", email: "al@example.com").merge(
           field_id("primary_age_group") => [ young.id.to_s ],
-          field_id("additional_age_group") => [ teen.id.to_s ]
+          field_id("additional_age_groups") => [ teen.id.to_s ]
         )
       )
 

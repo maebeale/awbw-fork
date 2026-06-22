@@ -229,8 +229,9 @@ class Person < ApplicationRecord
   end
 
   # Field identifiers whose "Other" free text maps onto the category-backed
-  # profile fields shown on the edit page.
-  OTHER_WORKSHOP_SETTING_IDENTIFIERS = %w[primary_age_group additional_age_group].freeze
+  # profile fields shown on the edit page. Mirrors the age group fields (current
+  # plural + legacy singular) so both keep resolving.
+  OTHER_WORKSHOP_SETTING_IDENTIFIERS = FormField::AGE_GROUP_FIELD_IDENTIFIERS
 
   # Free-text "Other" sectors the person typed on registration forms.
   # They can't be Sector records, so they're surfaced beside the sector tags.

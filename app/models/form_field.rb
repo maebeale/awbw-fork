@@ -37,15 +37,20 @@ class FormField < ApplicationRecord
   # (as a string). Maps the field identifier to its backing CategoryType name.
   DYNAMIC_FIELD_CATEGORY_TYPES = {
     "primary_age_group" => "AgeRange",
+    "additional_age_groups" => "AgeRange",
     "additional_age_group" => "AgeRange"
   }.freeze
 
   # The "primary" and "additional" age group fields. Both are backed by AgeRange
   # categories but omit the catch-all "Mixed-age groups" category — a respondent
   # names the concrete age groups they serve, not the mixed bucket.
+  #
+  # The "additional" field is multi-select, so its current identifier is plural;
+  # the legacy singular name is kept so existing form data keeps resolving
+  # (current name first, legacy last — matching the sector identifiers).
   PRIMARY_AGE_GROUP_FIELD_IDENTIFIER = "primary_age_group"
-  ADDITIONAL_AGE_GROUP_FIELD_IDENTIFIER = "additional_age_group"
-  AGE_GROUP_FIELD_IDENTIFIERS = [ PRIMARY_AGE_GROUP_FIELD_IDENTIFIER, ADDITIONAL_AGE_GROUP_FIELD_IDENTIFIER ].freeze
+  ADDITIONAL_AGE_GROUP_FIELD_IDENTIFIERS = %w[additional_age_groups additional_age_group].freeze
+  AGE_GROUP_FIELD_IDENTIFIERS = [ PRIMARY_AGE_GROUP_FIELD_IDENTIFIER, *ADDITIONAL_AGE_GROUP_FIELD_IDENTIFIERS ].freeze
 
   # The payment-method field. Its answer options ("Credit card (now)", etc.) are
   # wired to Stripe charge logic in the controllers, so they must not be edited
