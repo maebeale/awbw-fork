@@ -14,54 +14,89 @@
     </p>
   </div>
 
-  <% count = @event_registrations.size %>
+  <% registrant_count = @event_registrations.size %>
+  <% submitter_count = @submitters.size %>
+  <% count = registrant_count + submitter_count %>
   <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
     <div class="flex items-start gap-2">
       <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
       <div class="text-sm text-blue-800">
-        <p class="font-medium">You're about to email <%= count %> registrant<%= "s" if count != 1 %>.</p>
+        <p class="font-medium">You're about to email <%= count %> recipient<%= "s" if count != 1 %>.</p>
         <p class="mt-1">Review the recipients and the message below, then send. Each person receives their own copy, and one FYI email will be sent to the admin.</p>
       </div>
     </div>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-    <h2 class="text-lg font-semibold text-gray-800 mb-3">Recipients <span class="text-gray-400 font-normal">(<%= count %>)</span></h2>
+  <% if registrant_count.positive? %>
+    <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Registrants <span class="text-gray-400 font-normal">(<%= registrant_count %>)</span></h2>
 
-    <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Comma-separated names</h3>
-    <p class="text-sm text-gray-700 mb-4 break-words">
-      <%= @event_registrations.map { |reg| reg.registrant.full_name }.join(", ") %>
-    </p>
+      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Comma-separated names</h3>
+      <p class="text-sm text-gray-700 mb-4 break-words">
+        <%= @event_registrations.map { |reg| reg.registrant.full_name }.join(", ") %>
+      </p>
 
-    <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Comma-separated emails</h3>
-    <p class="text-sm text-gray-700 mb-4 break-words">
-      <%= @event_registrations.map { |reg| reg.registrant.preferred_email }.join(", ") %>
-    </p>
+      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Comma-separated emails</h3>
+      <p class="text-sm text-gray-700 mb-4 break-words">
+        <%= @event_registrations.map { |reg| reg.registrant.preferred_email }.join(", ") %>
+      </p>
 
-    <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Full list</h3>
-    <ul class="columns-1 sm:columns-2 gap-x-8 text-sm">
-      <% @event_registrations.each do |reg| %>
-        <li class="break-inside-avoid mb-1">
-          <span class="text-gray-900"><%= reg.registrant.full_name %></span>
-          <span class="text-gray-400">&lt;<%= reg.registrant.preferred_email %>&gt;</span>
-        </li>
-      <% end %>
-    </ul>
-  </div>
-
-  <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-      <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Subject</p>
-      <p class="text-sm font-medium text-gray-900"><%= @reminder_subject %></p>
+      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Full list</h3>
+      <ul class="columns-1 sm:columns-2 gap-x-8 text-sm">
+        <% @event_registrations.each do |reg| %>
+          <li class="break-inside-avoid mb-1">
+            <span class="text-gray-900"><%= reg.registrant.full_name %></span>
+            <span class="text-gray-400">&lt;<%= reg.registrant.preferred_email %>&gt;</span>
+          </li>
+        <% end %>
+      </ul>
     </div>
-    <div class="email-preview overflow-auto max-h-[70vh] p-4" style="font-family: Lato, sans-serif;">
-      <%= raw @reminder_preview_html %>
+  <% end %>
+
+  <% if submitter_count.positive? %>
+    <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Pay for Others submitters <span class="text-gray-400 font-normal">(<%= submitter_count %>)</span></h2>
+      <ul class="columns-1 sm:columns-2 gap-x-8 text-sm">
+        <% @submitters.each do |submission| %>
+          <li class="break-inside-avoid mb-1">
+            <span class="text-gray-900"><%= submission.bulk_payment_payer_name %></span>
+            <span class="text-gray-400">&lt;<%= submission.bulk_payment_reminder_email %>&gt;</span>
+          </li>
+        <% end %>
+      </ul>
     </div>
-  </div>
+  <% end %>
+
+  <% if @reminder_preview_html.present? %>
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
+      <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Registrant email &mdash; subject</p>
+        <p class="text-sm font-medium text-gray-900"><%= @reminder_subject %></p>
+      </div>
+      <div class="email-preview overflow-auto max-h-[70vh] p-4" style="font-family: Lato, sans-serif;">
+        <%= raw @reminder_preview_html %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @submitter_reminder_preview_html.present? %>
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
+      <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Pay for Others email &mdash; subject</p>
+        <p class="text-sm font-medium text-gray-900"><%= @submitter_reminder_subject %></p>
+      </div>
+      <div class="email-preview overflow-auto max-h-[70vh] p-4" style="font-family: Lato, sans-serif;">
+        <%= raw @submitter_reminder_preview_html %>
+      </div>
+    </div>
+  <% end %>
 
   <%= form_with url: send_reminder_event_path(@event), method: :post, data: { turbo: false } do |f| %>
     <% @event_registrations.each do |reg| %>
       <%= hidden_field_tag "registration_ids[]", reg.id %>
+    <% end %>
+    <% @submitters.each do |submission| %>
+      <%= hidden_field_tag "form_submission_ids[]", submission.id %>
     <% end %>
     <%# Carry the composed subject/message through to the send untouched. %>
     <%= hidden_field_tag :custom_subject, @custom_subject %>

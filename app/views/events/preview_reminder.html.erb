@@ -14,23 +14,28 @@
       <%= @event.title %><% if @event.start_date.present? %> &bull; <%= @event.date_range %><% end %>
     </p>
   </div>
-  <% if @event_registrations.empty? %>
-    <p class="text-gray-600 mb-4">There are no registrants with an email address to send a reminder to.</p>
+  <% if @event_registrations.empty? && @bulk_payment_recipients.empty? %>
+    <p class="text-gray-600 mb-4">There are no registrants or Pay for Others submitters with an email address to send a reminder to.</p>
     <%= link_to "Back to registrants", registrants_event_path(@event), class: "btn btn-secondary-outline" %>
   <% else %>
     <h2 class="text-lg font-semibold text-gray-800 mb-2 pb-2 border-b border-gray-200">Recipients</h2>
-    <p class="text-gray-600 mb-3">
-      Choose who will receive this reminder. Filters keep everyone in the list and
-      check the matches. Separate multiple values with
-      <code class="font-mono">'--'</code> to match multiple values (e.g.
-      <code class="font-mono">amy--aisha</code>).
-    </p>
-    <%= render "events/reminder_recipient_filters" %>
+    <% if @event_registrations.any? %>
+      <p class="text-gray-600 mb-3">
+        Choose who will receive this reminder. Filters keep everyone in the list and
+        check the matches. Separate multiple values with
+        <code class="font-mono">'--'</code> to match multiple values (e.g.
+        <code class="font-mono">amy--aisha</code>).
+      </p>
+      <%= render "events/reminder_recipient_filters" %>
+    <% end %>
     <%# Turbo disabled: this POST renders the confirmation interstitial (a full
         page), not a redirect, so a normal browser navigation is what we want.
         reminder-preview drives the live message/subject preview as the admin types. %>
     <%= form_with url: confirm_reminder_event_path(@event), method: :post, data: { controller: "reminder-preview", turbo: false } do |f| %>
-      <%= render "events/reminder_recipients" %>
+      <% if @event_registrations.any? %>
+        <%= render "events/reminder_recipients" %>
+      <% end %>
+      <%= render "events/reminder_submitter_recipients" %>
       <div class="my-14">
         <h2 class="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">Email draft</h2>
         <div class="bg-white border border-gray-200 rounded-lg p-6 pb-8 space-y-6">
@@ -60,7 +65,7 @@
       </div>
       <% if @reminder_preview_html.present? %>
         <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">Preview (sample registrant)</h2>
+          <h2 class="text-lg font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">Preview (<%= @preview_kind == :submitter ? "Pay for Others submitter" : "sample registrant" %>)</h2>
           <div class="border border-gray-200 rounded-lg bg-white overflow-hidden">
             <div class="border-b border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700">
               <span class="font-semibold text-gray-500">Subject:</span>
