@@ -51,7 +51,7 @@ This codebase (Rails 8.1)
 | `app/models/` | ActiveRecord models | ~80 files |
 | `app/services/` | Service objects and POROs (e.g. `MoneyFormatter` for currency display) | ~30 files |
 | `app/jobs/` | SolidQueue background jobs | 4 files |
-| `app/models/concerns/` | Shared model modules | 16 concerns |
+| `app/models/concerns/` | Shared model modules | 17 concerns |
 
 ### Presentation
 
@@ -143,6 +143,7 @@ This codebase (Rails 8.1)
 | `SectorsTaggable` | Enforces a single primary sector for sector-tagged owners |
 | `TagFilterable` | Scope-based filtering by tag names |
 | `Trendable` | Trending metrics tracking |
+| `UserStampable` | Stamps `updated_by_id` from `Current.user` on every write (no-op without the column) |
 | `WindowsTypeFilterable` | Filter by WindowsType association |
 
 ## Controllers
@@ -445,7 +446,7 @@ RuboCop linting on PRs and pushes to main.
 
 ## Rake Tasks
 
-Located in `lib/tasks/` (8 files):
+Located in `lib/tasks/` (9 files):
 - `dev.rake` — Development database seeding from XML/CSV
 - `rhino_migrator.rake` — Rich text editor migration
 - `attachment_report.rake` — Attachment reporting
@@ -454,3 +455,4 @@ Located in `lib/tasks/` (8 files):
 - `legacy_user_permissions_to_comments.rake` — Migrate legacy user permissions into comments
 - `migrate_sectors.rake` — Sector data migration
 - `migrate_workshop_logs.rake` — Workshop log migration
+- `backfill_user_stamps.rake` — Backfill `created_by_id`/`updated_by_id` on legacy rows from the Ahoy trail (`data:backfill_user_stamps`)

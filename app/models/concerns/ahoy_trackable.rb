@@ -40,7 +40,7 @@ module AhoyTrackable
   def track_update_event
     return if previously_new_record? # Skip the fake "update" that happens right after create
 
-    changes = previous_changes.except("updated_at", "created_at")
+    changes = previous_changes.except("updated_at", "created_at", "created_by_id", "updated_by_id")
     assoc_changes = collect_association_changes
 
     return if changes.empty? && assoc_changes.empty?
