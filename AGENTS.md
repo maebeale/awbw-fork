@@ -143,7 +143,7 @@ This codebase (Rails 8.1)
 | `SectorsTaggable` | Enforces a single primary sector for sector-tagged owners |
 | `TagFilterable` | Scope-based filtering by tag names |
 | `Trendable` | Trending metrics tracking |
-| `UserStampable` | Stamps `updated_by_id` from `Current.user` on every write (no-op without the column) |
+| `UserStampable` | Stamps `created_by_id`/`updated_by_id` from `Current.user` (no-op without the columns) |
 | `WindowsTypeFilterable` | Filter by WindowsType association |
 
 ## Controllers

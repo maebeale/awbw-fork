@@ -79,7 +79,7 @@ class EventRegistrationsController < ApplicationController
   def update
     authorize! @event_registration
     @event_registration.assign_attributes(event_registration_update_params)
-    @event_registration.comments.select(&:new_record?).each { |c| c.created_by = current_user; c.updated_by = current_user }
+    @event_registration.comments.select(&:new_record?).each { |c| c.updated_by = current_user }
     @event_registration.comments.select { |c| c.persisted? && c.body_changed? }.each { |c| c.updated_by = current_user }
 
     # Inline-logged notifications are addressed to the registrant.

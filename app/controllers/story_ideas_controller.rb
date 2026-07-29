@@ -33,7 +33,6 @@ class StoryIdeasController < ApplicationController
 
   def create
     @story_idea = StoryIdea.new(story_idea_params.except(:category_ids, :sector_ids))
-    @story_idea.created_by = current_user
     @story_idea.updated_by = current_user
     authorize! @story_idea
 
