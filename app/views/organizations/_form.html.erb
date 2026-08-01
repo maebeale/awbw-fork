@@ -82,12 +82,10 @@
             change. Native <details>/<summary>, no JavaScript. %>
         <% selected_names = cats.select { |category| @organization.category_ids.include?(category.id) }.map(&:name) %>
         <details class="group">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            <div class="flex items-baseline gap-2 flex-wrap">
-              <span class="font-semibold text-gray-700"><%= type.display_label %>:</span>
-              <span class="text-sm text-gray-500"><%= selected_names.any? ? selected_names.to_sentence : "None selected" %></span>
-            </div>
-            <i class="fa-solid fa-chevron-down text-gray-400 transition-transform group-open:rotate-180"></i>
+          <summary class="flex items-baseline gap-2 flex-wrap cursor-pointer list-none [&::-webkit-details-marker]:hidden text-gray-700 hover:text-blue-600">
+            <span class="font-semibold"><%= type.display_label %>:</span>
+            <span class="text-sm text-gray-500"><%= selected_names.any? ? selected_names.to_sentence : "None selected" %></span>
+            <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform group-open:rotate-180"></i>
           </summary>
           <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm mt-2">
             <% if is_age %>
@@ -112,9 +110,9 @@
       fields) or when the form has errors so nothing hides behind the summary. %>
   <% background_open = !@organization.persisted? || @organization.errors.any? %>
   <details class="form-group space-y-4 mb-8 group"<%= " open".html_safe if background_open %>>
-    <summary class="flex items-center justify-between gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-      <span class="font-semibold text-gray-700">Background Info</span>
-      <i class="fa-solid fa-chevron-down text-gray-400 transition-transform group-open:rotate-180"></i>
+    <summary class="flex items-baseline gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-gray-700 hover:text-blue-600">
+      <span class="font-semibold">Background Info</span>
+      <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform group-open:rotate-180"></i>
     </summary>
 
     <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 mb-4 shadow-sm">
@@ -229,10 +227,25 @@
     </div>
   </details>
 
-  <div class="form-group space-y-4 mb-8">
-    <div class="font-semibold text-gray-700 mb-2">
-      Addresses
-    </div>
+  <%# Collapsible like the sections above — there's usually just one address, so
+      collapse to a one-line summary. Stays open on a new org or when an address
+      (or the org) has errors so validation isn't hidden. %>
+  <% org_addresses = f.object.addresses.reject(&:marked_for_destruction?) %>
+  <% addresses_open = !f.object.persisted? || f.object.errors.any? ||
+       org_addresses.any? { |address| address.errors.any? } %>
+  <% address_summary = if org_addresses.none?
+       "None"
+     elsif org_addresses.one?
+       org_addresses.first.name
+     else
+       pluralize(org_addresses.size, "address")
+     end %>
+  <details class="form-group space-y-4 mb-8 group"<%= " open".html_safe if addresses_open %>>
+    <summary class="flex items-baseline gap-2 flex-wrap cursor-pointer list-none [&::-webkit-details-marker]:hidden text-gray-700 hover:text-blue-600">
+      <span class="font-semibold">Addresses:</span>
+      <span class="text-sm text-gray-500"><%= address_summary %></span>
+      <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform group-open:rotate-180"></i>
+    </summary>
 
     <div class="rounded-lg border border-gray-200 bg-yellow-50 p-4 mb-4 shadow-sm">
       <div class="flex flex-wrap items-center gap-4 p-3">
@@ -251,7 +264,7 @@
                                   },
                                   class: "btn btn-secondary-outline" %>
     </div>
-  </div>
+  </details>
 
   <div id="affiliations" class="form-group space-y-4 mb-8 scroll-mt-20">
     <div class="font-semibold text-gray-700 mb-2">
