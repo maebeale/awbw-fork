@@ -52,4 +52,20 @@ RSpec.describe PersonDecorator do
       expect(person.decorate.affiliated_since_date).to be_nil
     end
   end
+
+  describe "#profile_display_summary" do
+    it "says everything is shown when no toggle is hidden" do
+      expect(create(:person).decorate.profile_display_summary).to eq("All shown")
+    end
+
+    it "names only the hidden items, prefixed with Hide" do
+      person = create(:person, profile_show_phone: false, profile_show_bio: false)
+      expect(person.decorate.profile_display_summary).to eq("Hide phone and bio")
+    end
+
+    it "uses the checkbox wording for a hidden item" do
+      person = create(:person, profile_show_member_since: false)
+      expect(person.decorate.profile_display_summary).to eq("Hide facilitator since")
+    end
+  end
 end
