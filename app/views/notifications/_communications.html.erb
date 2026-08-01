@@ -26,23 +26,28 @@
     id) rather than the fresh query row, so an admin's unsaved inline edits
     survive a validation re-render instead of reverting to the saved values. %>
 <% own_notifications_by_id = admin ? record.notifications.index_by(&:id) : {} %>
-<section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm" data-controller="edit-toggle">
-  <div class="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
+<%# Collapsible (expanded by default) so long communication logs don't dominate
+    the form; the header row is the disclosure summary. %>
+<details class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm group" data-controller="edit-toggle" open>
+  <summary class="flex items-center gap-3 border-b border-gray-100 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-gray-50">
     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg <%= DomainTheme.bg_class_for(:users, intensity: 100) %> <%= DomainTheme.text_class_for(:users, intensity: 600) %>">
       <i class="fa-solid fa-bell"></i>
     </span>
     <h2 class="text-sm font-semibold text-gray-700"><%= t(title_key) %></h2>
-    <% if email.present? && admin %>
-      <%= link_to notifications_path(email: email),
-                  class: "ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:underline",
-                  target: "_blank", rel: "noopener" do %>
-        View all
-        <i class="fa-solid fa-arrow-up-right-from-square text-[0.6rem]"></i>
-      <% end %>
-    <% end %>
-  </div>
+    <i class="fa-solid fa-chevron-down ml-auto text-xs text-gray-400 transition-transform group-open:rotate-180"></i>
+  </summary>
 
   <div class="space-y-3 p-4">
+    <% if email.present? && admin %>
+      <div class="flex justify-end">
+        <%= link_to notifications_path(email: email),
+                    class: "inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:underline",
+                    target: "_blank", rel: "noopener" do %>
+          View all
+          <i class="fa-solid fa-arrow-up-right-from-square text-[0.6rem]"></i>
+        <% end %>
+      </div>
+    <% end %>
     <div data-controller="paginated-fields" data-paginated-fields-per-page-value="5" class="space-y-2">
       <div id="<%= list_id %>" class="space-y-2">
         <% notifications.each do |notification| %>
@@ -93,4 +98,4 @@
       </div>
     <% end %>
   </div>
-</section>
+</details>

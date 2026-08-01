@@ -248,7 +248,7 @@ RSpec.describe "Event registration edit page", type: :system do
       sign_in(admin)
       visit edit_event_registration_path(registration)
 
-      within("section", text: "Registration communications") do
+      within("details", text: "Registration communications") do
         expect(page).to have_text("Event registration confirmed")
         expect(page).to have_no_link("Event registration confirmed")
         expect(page).to have_link("View all")
@@ -259,7 +259,7 @@ RSpec.describe "Event registration edit page", type: :system do
       sign_in(admin)
       visit edit_event_registration_path(registration)
 
-      within("section", text: "Registration communications") do
+      within("details", text: "Registration communications") do
         click_on "Add communication"
         fill_in "Subject", with: "Called about parking"
       end

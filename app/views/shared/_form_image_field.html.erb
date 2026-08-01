@@ -16,6 +16,9 @@
 <% hint ||= nil %>
 <% rounded ||= false %>
 <% multiple ||= false %>
+<%# Tailwind size classes for the preview/placeholder box; callers can pass a
+    smaller box (e.g. "w-24 h-24") to keep a section compact. %>
+<% size ||= "w-32 h-32" %>
 <% file ||= nil %>
 <% use_profile_placeholder ||= false %>
 <% show_file_field = show_file_field.to_s.present? ? show_file_field : true %>
@@ -52,7 +55,7 @@
                       id: image_dom_id,
                       alt: "#{label}",
                       data: { file_preview_target: "preview" },
-                      class: "w-32 h-32 object-cover border border-gray-300 shadow-sm #{rounded ? 'rounded-full' : ''}" %>
+                      class: "#{size} object-cover border border-gray-300 shadow-sm #{rounded ? 'rounded-full' : ''}" %>
 
         <%# ---------- PDF PREVIEW ---------- %>
       <% elsif is_pdf && file.previewable? %>
@@ -60,14 +63,14 @@
                       id: image_dom_id,
                       alt: "#{label} PDF preview",
                       data: { file_preview_target: "preview" },
-                      class: "w-32 h-32 object-contain border border-gray-300 shadow-sm" %>
+                      class: "#{size} object-contain border border-gray-300 shadow-sm" %>
 
         <%# ---------- PLACEHOLDER ---------- %>
       <% else %>
-        <div class="relative w-32 h-32">
+        <div class="relative <%= size %>">
           <img id="<%= image_dom_id %>"
                data-file-preview-target="preview"
-               class="hidden w-32 h-32 object-cover border border-gray-300 shadow-sm">
+               class="hidden <%= size %> object-cover border border-gray-300 shadow-sm">
 
           <div data-file-preview-target="placeholder"
                class="absolute inset-0 flex items-center justify-center
