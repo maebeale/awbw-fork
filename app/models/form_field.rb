@@ -5,6 +5,11 @@ class FormField < ApplicationRecord
   has_many :form_answers, dependent: :nullify
   has_many :childs, foreign_key: "parent_id", class_name: "FormField"
 
+  # A field can fan out over resources: with any linked here it becomes a
+  # "per-resource" question rendering one input per resource (see FormFieldResource).
+  has_many :form_field_resources, -> { ordered }, dependent: :destroy, inverse_of: :form_field
+  has_many :resources, through: :form_field_resources
+
   # has_many through
   has_many :answer_options, through: :form_field_answer_options
 
@@ -165,6 +170,9 @@ class FormField < ApplicationRecord
   accepts_nested_attributes_for :form_field_answer_options, allow_destroy: true,
     reject_if: ->(attrs) { attrs[:option_name].blank? }
 
+  accepts_nested_attributes_for :form_field_resources, allow_destroy: true,
+    reject_if: ->(attrs) { attrs[:resource_id].blank? }
+
   scope :published, -> { where(status: "active") }
 
   # Methods
@@ -172,6 +180,12 @@ class FormField < ApplicationRecord
 
   def selectable?
     answer_type.in?(SELECTABLE_ANSWER_TYPES)
+  end
+
+  # True when this field fans out over linked resources — rendered once per resource
+  # on the survey page, with the resource's title appended to the prompt.
+  def per_resource?
+    form_field_resources.any?
   end
 
   # True for fields whose answer options are tied to backend logic (currently the
