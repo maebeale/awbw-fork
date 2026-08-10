@@ -513,6 +513,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_20_144446) do
     t.boolean "intends_to_pay", default: false, null: false
     t.boolean "invoice_requested", default: false, null: false
     t.boolean "payment_unresolved"
+    t.datetime "post_survey_completed_at"
     t.bigint "registrant_id", null: false
     t.boolean "scholarship_requested", default: false, null: false
     t.boolean "shoutout", default: false, null: false
@@ -668,6 +669,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_20_144446) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["answer_option_id"], name: "index_form_field_answer_options_on_answer_option_id"
     t.index ["form_field_id"], name: "index_form_field_answer_options_on_form_field_id"
+  end
+
+  create_table "form_field_resources", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "form_field_id", null: false
+    t.integer "position"
+    t.integer "resource_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["form_field_id", "resource_id"], name: "index_form_field_resources_on_field_and_resource", unique: true
+    t.index ["form_field_id"], name: "index_form_field_resources_on_form_field_id"
+    t.index ["resource_id"], name: "index_form_field_resources_on_resource_id"
   end
 
   create_table "form_fields", id: :integer, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1194,6 +1206,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_20_144446) do
     t.text "description"
     t.datetime "display_from"
     t.bigint "event_id", null: false
+    t.integer "form_id"
     t.boolean "hidden", default: false, null: false
     t.string "icon_class"
     t.boolean "payment_access_gated", default: false, null: false
@@ -1204,6 +1217,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_20_144446) do
     t.index ["event_id", "builtin_key"], name: "index_registration_ticket_callouts_on_event_id_and_builtin_key", unique: true
     t.index ["event_id", "position"], name: "index_registration_ticket_callouts_on_event_id_and_position"
     t.index ["event_id"], name: "index_registration_ticket_callouts_on_event_id"
+    t.index ["form_id"], name: "index_registration_ticket_callouts_on_form_id"
   end
 
   create_table "report_form_field_answers", id: :integer, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -1879,6 +1893,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_20_144446) do
   add_foreign_key "form_builders", "windows_types"
   add_foreign_key "form_field_answer_options", "answer_options"
   add_foreign_key "form_field_answer_options", "form_fields"
+  add_foreign_key "form_field_resources", "form_fields"
+  add_foreign_key "form_field_resources", "resources"
   add_foreign_key "form_fields", "forms"
   add_foreign_key "form_submissions", "events"
   add_foreign_key "form_submissions", "forms"
@@ -1910,6 +1926,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_20_144446) do
   add_foreign_key "registration_ticket_callout_resources", "registration_ticket_callouts", on_delete: :cascade
   add_foreign_key "registration_ticket_callout_resources", "resources", on_delete: :cascade
   add_foreign_key "registration_ticket_callouts", "events"
+  add_foreign_key "registration_ticket_callouts", "forms"
   add_foreign_key "report_form_field_answers", "answer_options"
   add_foreign_key "report_form_field_answers", "form_fields"
   add_foreign_key "report_form_field_answers", "reports"
