@@ -55,8 +55,7 @@ class RegistrationTicketCallout < ApplicationRecord
 
   belongs_to :event
 
-  # The survey form this callout delivers inline (post-event survey callouts). Most
-  # callouts have none.
+  # The survey form this callout delivers inline (post-event survey callouts); usually nil.
   belongs_to :form, optional: true
 
   # A callout can link many resources, shown in order on its detail page (PDF
