@@ -25,7 +25,7 @@ class ContactUsController < ApplicationController
     authorize! :contact_us, to: :create?
     from = "story_share" if params[:from] == "story_share"
 
-    if params[:contact_us][:website_url].present?
+    if Honeypot.tripped?(params, :contact_us)
       redirect_to contact_us_path(from: from)
       return
     end
