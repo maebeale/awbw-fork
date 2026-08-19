@@ -5,6 +5,8 @@ module Analytics
   # "Associated records" panel. Powers the person edit "History" card and the
   # `person_id` filter on the admin Ahoy activities index.
   class PersonActivityEvents
+    PAYMENT_TYPES = %w[ Payment FilemakerPayment ExternalProcessorPayment CheckPayment CashPayment ].freeze
+
     def initialize(person)
       @person = person
     end
@@ -45,7 +47,8 @@ module Analytics
         "ContinuingEducationRegistration" => ContinuingEducationRegistration.where(event_registration_id: @person.event_registrations.select(:id)).select(:id),
         "FormSubmission" => @person.form_submissions.select(:id),
         "Grant" => @person.grants.select(:id),
-        "Payment" => Payment.where(person_id: @person.id).select(:id),
+        # Lifecycle events record the STI subclass ("CashPayment", …), not "Payment".
+        PAYMENT_TYPES => Payment.where(person_id: @person.id).select(:id),
         "Scholarship" => @person.scholarships.select(:id),
         "TopicSubscription" => @person.topic_subscriptions.select(:id),
         "CommunityNews" => @person.community_news_as_author.select(:id),
