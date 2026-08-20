@@ -23,7 +23,10 @@ decisions that resolve the ambiguities so they're written down once.
 
 - **Affiliation** — an Org ↔ Person link (`affiliations` table) with `title`,
   `start_date`, `end_date`, and a cached `inactive` flag. **Not tied to any
-  event** (there is no `event_id` on an affiliation).
+  event** (there is no `event_id` on an affiliation). **Refined by
+  [ADR-0002](0002-affiliations-as-the-record-of-two-relationships.md) D2a:** still no
+  `event_id`, but there is now an `event_registration_id` recording which
+  registration minted the row.
 - **Facilitator affiliation** — an affiliation whose `title` is **exactly
   `"Facilitator"`** (trimmed, case-sensitive). No fuzzy/`LIKE` matching; "Lead
   Facilitator" and "facilitator" do **not** count. See `Affiliation#facilitator?`
@@ -32,6 +35,9 @@ decisions that resolve the ambiguities so they're written down once.
   `>= today`). `inactive` is a cached column derived from the dates on save
   (`set_inactive_from_dates`: `inactive = end_date.present? && end_date < today`),
   so in practice "active" reduces to **no end date, or end date ≥ today**.
+  **Superseded by [ADR-0002](0002-affiliations-as-the-record-of-two-relationships.md)
+  D2:** `inactive` is now an override that can end a row the dates still call
+  active, so "active" no longer reduces to the dates.
 - **Facilitator-training event** — `events.facilitator_training == true`. The
   only events for which per-event program status is meaningful.
 
@@ -208,7 +214,9 @@ coincide when no organization attended twice.
 
 - **Strict `<`** for "earlier": `start_date == anchor` is **not** earlier (so the
   affiliation a training mints is **New**, not Ongoing).
-- **Active-at-date** uses `end_date IS NULL OR end_date >= anchor`.
+- **Active-at-date** uses `end_date IS NULL OR end_date >= anchor`. Spelled
+  `Affiliation.active_by_date_on(date)` since ADR-0002 D3 — the `historical` in the
+  name marks it as the dates-only reader.
 
 ## Notes / open items
 
