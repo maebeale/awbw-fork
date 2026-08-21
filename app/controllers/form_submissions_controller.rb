@@ -27,6 +27,8 @@ class FormSubmissionsController < ApplicationController
   def changes
     @form_submission = FormSubmission.find(params[:id])
     authorize! @form_submission, to: :changes?
-    @change_groups = FormSubmissionChanges.new(@form_submission).groups
+    changes = FormSubmissionChanges.new(@form_submission)
+    @change_groups = changes.edited_groups
+    @changed_count = changes.edited_count
   end
 end
