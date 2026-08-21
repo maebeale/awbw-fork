@@ -10,9 +10,15 @@ class SectorableItem < ApplicationRecord
   before_create :skip_if_duplicate
 
   # Methods
+  # windows_type is a WorkshopLog-only association, so only a WorkshopLog sectorable
+  # gets the "<title> - <windows type>" form. Any other sectorable (a person or
+  # organization tagged with this sector) falls back to its own title/name — without
+  # this guard, calling windows_type on them raised and silently dropped the tag's
+  # lifecycle (Ahoy) event.
   def title
-    return id unless sectorable && sectorable.class != WorkshopLog
-    "#{sectorable.title} - #{sectorable.windows_type.name if sectorable.windows_type}"
+    return "#{sectorable.title} - #{sectorable.windows_type&.name}" if sectorable.is_a?(WorkshopLog)
+
+    sectorable.try(:title).presence || sectorable.try(:name).presence || id.to_s
   end
 
   private
