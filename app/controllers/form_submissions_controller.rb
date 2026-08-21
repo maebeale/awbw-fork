@@ -21,4 +21,12 @@ class FormSubmissionsController < ApplicationController
     @form_submission = FormSubmission.find(params[:id])
     authorize! @form_submission
   end
+
+  # Admin-only audit of everything this submission's smart-field answers changed
+  # across records, read back from the stamped Ahoy lifecycle events.
+  def changes
+    @form_submission = FormSubmission.find(params[:id])
+    authorize! @form_submission, to: :changes?
+    @change_groups = FormSubmissionChanges.new(@form_submission).groups
+  end
 end
