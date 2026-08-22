@@ -499,6 +499,7 @@ module EventRegistrationServices
       submission = FormSubmission.create!(person: person, form: @registration_form, event: @event, role: "registration")
       save_form_answers(submission)
       OtherResponses::CaptureFromSubmission.call(submission)
+      Quotes::CaptureFromSubmission.call(submission)
       submission
     end
 
@@ -508,6 +509,7 @@ module EventRegistrationServices
       end
       save_form_answers(submission)
       OtherResponses::CaptureFromSubmission.call(submission)
+      Quotes::CaptureFromSubmission.call(submission)
       submission
     end
 
@@ -542,6 +544,7 @@ module EventRegistrationServices
       end
 
       OtherResponses::CaptureFromSubmission.call(submission)
+      Quotes::CaptureFromSubmission.call(submission)
     end
 
     def save_continuing_education_submission(person)
