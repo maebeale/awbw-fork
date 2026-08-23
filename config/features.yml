@@ -61,6 +61,20 @@
   pro_tips:
     - "Active means started and not ended; a future start reads as Upcoming until that date arrives. Upcoming orgs also still appear under the Inactive filter."
 
+- name: "Scholarship program status is judged at its own training"
+  area: events
+  display_status: admin_facing
+  released_on: 2026-08-23
+  action_path: "/scholarships"
+  pr_number: 2336
+  summary: >-
+    The New / Ongoing / Reinstated column on the scholarship index is now judged
+    as of the training each award paid for, so two awards on the same page can
+    read differently. It uses the same rule as the event reports and org profile
+    chips, and hovering explains the verdict and the date it was judged on.
+  pro_tips:
+    - "An award with no registration behind it falls back to the start of the current year — the hover text says so."
+
 - name: "Activity log: readable details column"
   area: reporting
   display_status: admin_facing
