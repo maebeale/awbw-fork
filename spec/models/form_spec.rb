@@ -56,6 +56,33 @@ RSpec.describe Form do
     end
   end
 
+  describe "identity questions and anonymity" do
+    let(:form) { build(:form) }
+    let(:email_field) { build(:form_field, field_identifier: "primary_email", required: true) }
+    let(:other_field) { build(:form_field, field_identifier: "why_volunteer", required: true) }
+
+    context "when anonymous submissions are allowed" do
+      before { form.allow_anonymous_submissions = true }
+
+      it "treats identity questions as optional" do
+        expect(form.optional_identity_field?(email_field)).to be(true)
+        expect(form.requires_answer?(email_field)).to be(false)
+      end
+
+      it "still requires non-identity questions marked required" do
+        expect(form.optional_identity_field?(other_field)).to be(false)
+        expect(form.requires_answer?(other_field)).to be(true)
+      end
+    end
+
+    context "when anonymous submissions are not allowed" do
+      it "keeps required identity questions required" do
+        expect(form.optional_identity_field?(email_field)).to be(false)
+        expect(form.requires_answer?(email_field)).to be(true)
+      end
+    end
+  end
+
   describe '#display_name' do
     let(:user_owner) do
       create(:user)

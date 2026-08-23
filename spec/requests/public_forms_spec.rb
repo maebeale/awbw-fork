@@ -79,6 +79,31 @@ RSpec.describe "PublicForms", type: :request do
     end
   end
 
+  describe "anonymous submissions" do
+    before { form.update!(allow_anonymous_submissions: true) }
+
+    it "tells respondents the form can be submitted anonymously" do
+      get public_form_path(form.slug)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("submit this form anonymously")
+    end
+
+    it "records a person-less submission when identity is left blank" do
+      expect { post public_form_path(form.slug), params: submission_params(first: "", last: "", email: "") }
+        .to change(FormSubmission, :count).by(1)
+        .and change(Person, :count).by(0)
+
+      expect(response).to redirect_to(thank_you_public_form_path(form.slug))
+      expect(FormSubmission.last.person).to be_nil
+    end
+
+    it "still builds a person when the respondent fills in name and email" do
+      expect { post public_form_path(form.slug), params: submission_params }
+        .to change(Person, :count).by(1)
+    end
+  end
+
   describe "GET /f/:slug/thank-you" do
     it "renders a confirmation" do
       get thank_you_public_form_path(form.slug)

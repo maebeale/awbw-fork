@@ -133,6 +133,12 @@
           </label>
           <p class="text-xs text-gray-500">Publishes the form at the public link below. A form connected to an event can't be published — event forms are filled out through their event.</p>
 
+          <label class="flex cursor-pointer items-center gap-2">
+            <%= f.check_box :allow_anonymous_submissions, class: "rounded border-gray-300 text-purple-600" %>
+            <span class="text-sm text-gray-800">Allow anonymous submissions (name & email become optional)</span>
+          </label>
+          <p class="text-xs text-gray-500">When on, respondents can submit without giving a name or email. Those questions still appear but aren't required.</p>
+
           <div>
             <label class="mb-1 block text-sm font-medium text-gray-700">Public link address</label>
             <div class="flex max-w-lg items-center overflow-hidden rounded border border-gray-300 shadow-sm">
@@ -140,7 +146,7 @@
               <%= f.text_field :slug, placeholder: "volunteer-interest",
                     class: "flex-1 border-0 px-3 py-2 text-sm focus:ring-0" %>
             </div>
-            <p class="mt-1 text-xs text-gray-500">Lowercase letters, numbers, and hyphens. Required to publish. Must include name and email questions to identify who submitted.</p>
+            <p class="mt-1 text-xs text-gray-500">Lowercase letters, numbers, and hyphens. Required to publish. Include name and email questions to identify who submitted — unless anonymous submissions are allowed.</p>
           </div>
 
           <% if @form.publicly_fillable? %>

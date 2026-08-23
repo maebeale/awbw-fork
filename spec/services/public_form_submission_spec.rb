@@ -110,6 +110,36 @@ RSpec.describe PublicFormSubmission do
     expect(confirmation.recipient_role).to eq("person")
   end
 
+  context "when the form allows anonymous submissions" do
+    let(:form) { create(:form, slug: "volunteer-interest", published: true, allow_anonymous_submissions: true) }
+
+    it "records a person-less submission when identity is blank" do
+      result = nil
+      expect { result = described_class.call(form: form, form_params: params_for(first: "", last: "", email: "")) }
+        .to change(FormSubmission, :count).by(1)
+        .and change(Person, :count).by(0)
+
+      expect(result.success?).to be(true)
+      expect(result.form_submission.person).to be_nil
+      expect(result.form_submission).to be_anonymous
+      expect(result.form_submission.form_answers.find_by(form_field: question_field).submitted_answer).to eq("I care.")
+    end
+
+    it "still builds a person when the respondent chooses to identify" do
+      result = nil
+      expect { result = described_class.call(form: form, form_params: params_for) }
+        .to change(Person, :count).by(1)
+
+      expect(result.form_submission.person.email).to eq("sam@example.com")
+    end
+
+    it "skips the submitter confirmation but still sends the admin FYI for an anonymous submission" do
+      expect { described_class.call(form: form, form_params: params_for(first: "", last: "", email: "")) }
+        .to change { Notification.where(kind: "form_submission_confirmation").count }.by(0)
+        .and change { Notification.where(kind: "form_submission_confirmation_fyi").count }.by(1)
+    end
+  end
+
   it "records mailing-list consent once when the consent question is answered" do
     consent_field = create(:form_field, form: form, name: "Email me updates",
                            answer_type: :multi_select_checkbox, field_identifier: "communication_consent")

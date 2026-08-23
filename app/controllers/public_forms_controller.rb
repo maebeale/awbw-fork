@@ -73,6 +73,12 @@ class PublicFormsController < ApplicationController
     fields = @form_fields.reject(&:group_header?)
     errors = FormAnswerValidator.call(fields, form_params)
 
+    # An anonymous-capable form leaves its identity questions optional, so drop
+    # their blank-required errors while keeping any format error on a filled one.
+    fields.each do |field|
+      errors.delete(field.id) if @form.optional_identity_field?(field) && form_params[field.id.to_s].blank?
+    end
+
     fields_by_identifier = fields.select { |f| f.field_identifier.present? }.index_by(&:field_identifier)
     confirm_field = fields_by_identifier["confirm_email"]
     email_field = fields_by_identifier["primary_email"]

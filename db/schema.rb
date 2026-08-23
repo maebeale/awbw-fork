@@ -696,7 +696,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_23_184624) do
     t.bigint "event_id"
     t.integer "form_id", null: false
     t.json "metadata"
-    t.bigint "person_id", null: false
+    t.bigint "person_id"
     t.string "role"
     t.string "slug"
     t.datetime "updated_at", null: false
@@ -707,6 +707,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_23_184624) do
   end
 
   create_table "forms", id: :integer, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.boolean "allow_anonymous_submissions", default: false, null: false
     t.datetime "created_at", precision: nil, null: false
     t.integer "form_builder_id"
     t.text "header"

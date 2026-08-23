@@ -23,9 +23,9 @@ class PublicFormSubmission
   def call
     ActiveRecord::Base.transaction do
       person = find_or_create_person
-      return Result.new(success?: false, errors: [ IDENTITY_MISSING_MESSAGE ]) unless person
+      return Result.new(success?: false, errors: [ IDENTITY_MISSING_MESSAGE ]) unless person || @form.allow_anonymous_submissions?
 
-      record_mailing_list_consent(person)
+      record_mailing_list_consent(person) if person
 
       submission = FormSubmission.create!(person: person, form: @form, role: ROLE)
       save_form_answers(submission)
@@ -117,13 +117,16 @@ class PublicFormSubmission
   # A confirmation to the submitter and an FYI to the AWBW team, mirroring the
   # event-registration flow.
   def send_notifications(submission)
-    NotificationServices::CreateNotification.call(
-      noticeable: submission,
-      kind: :form_submission_confirmation,
-      recipient_role: :person,
-      recipient_email: submission.person.preferred_email,
-      notification_type: 0
-    )
+    # An anonymous submission has no submitter to confirm to; only the team FYI goes out.
+    if submission.person
+      NotificationServices::CreateNotification.call(
+        noticeable: submission,
+        kind: :form_submission_confirmation,
+        recipient_role: :person,
+        recipient_email: submission.person.preferred_email,
+        notification_type: 0
+      )
+    end
 
     NotificationServices::CreateNotification.call(
       noticeable: submission,

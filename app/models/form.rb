@@ -12,6 +12,11 @@ class Form < ApplicationRecord
   # submissions index scenario filter.
   AGREEMENT_ROLES = %w[registration new_job reinstatement].freeze
 
+  # Name/email questions that identify the submitter. When a form accepts
+  # anonymous submissions these stay on the form but are never required, so a
+  # respondent can fill them or skip them (see PublicFormSubmission).
+  IDENTITY_IDENTIFIERS = %w[first_name last_name primary_email confirm_email].freeze
+
   belongs_to :owner, polymorphic: true, optional: true
   has_many :form_fields, dependent: :destroy, inverse_of: :form
   has_many :event_forms, dependent: :destroy
@@ -56,6 +61,18 @@ class Form < ApplicationRecord
   # event-connected form stays tied to its event and is never offered publicly.
   def publicly_fillable?
     standalone? && !event_connected? && published? && slug.present?
+  end
+
+  # An identity question whose answer is optional because this form accepts
+  # anonymous submissions — even when the field is flagged required.
+  def optional_identity_field?(field)
+    allow_anonymous_submissions? && field.field_identifier.in?(IDENTITY_IDENTIFIERS)
+  end
+
+  # Whether a submission must carry an answer for this field, accounting for
+  # anonymity relaxing the identity questions.
+  def requires_answer?(field)
+    field.required? && !optional_identity_field?(field)
   end
 
   private

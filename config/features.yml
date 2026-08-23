@@ -2103,3 +2103,19 @@
     subscription form, filter the subscriptions list by organization, and see it
     in the new Organization column. It's optional — leave it blank for a topic
     that isn't tied to any organization.
+
+- name: "Anonymous form submissions"
+  area: content
+  display_status: admin_facing
+  released_on: 2026-08-23
+  action_path: "/forms"
+  pr_number: 2350
+  summary: >-
+    Turn on "Allow anonymous submissions" on a public form and its name and email
+    questions become optional, so people can respond without identifying
+    themselves. Anonymous responses show as "Anonymous" in the submissions index.
+  pro_tips:
+    - The name and email questions still appear on the form — respondents can fill
+      them in or skip them.
+    - Anonymous responses send the team the usual FYI email but no confirmation
+      goes back (there's no email to send it to).
